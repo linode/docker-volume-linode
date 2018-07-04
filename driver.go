@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"syscall"
@@ -30,9 +31,10 @@ func (driver linodeVolumeDriver) Get(req *volume.GetRequest) (*volume.GetRespons
 			Name:       linVol.Label,
 			Mountpoint: linVol.Mountpoint(),
 		}
-		return &volume.GetResponse{vol}, nil
+		return &volume.GetResponse{Volume: vol}, nil
 	}
-	return nil, log.Err("Volume with name %s not found", req.Name)
+	log.Warn("Volume with name %s not found")
+	return nil, fmt.Errorf("Volume with name %s not found", req.Name)
 }
 
 // List implementation
@@ -41,7 +43,7 @@ func (driver linodeVolumeDriver) List() (*volume.ListResponse, error) {
 
 	//
 	var volumes []*volume.Volume
-	driver.linodeAPI.EachVolume(func(linVol linode.Volume) bool {
+	err := driver.linodeAPI.EachVolume(func(linVol linode.Volume) bool {
 		vol := &volume.Volume{
 			Name:       linVol.Label,
 			Mountpoint: linVol.Mountpoint(),
@@ -51,7 +53,7 @@ func (driver linodeVolumeDriver) List() (*volume.ListResponse, error) {
 	})
 
 	log.Info("List(): %s", volumes)
-	return &volume.ListResponse{Volumes: volumes}, nil
+	return &volume.ListResponse{Volumes: volumes}, err
 }
 
 // Create implementation
@@ -127,7 +129,7 @@ func (driver linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.MountR
 
 	log.Info("Mount Call End: %s", req.Name)
 
-	return &volume.MountResponse{mp}, nil
+	return &volume.MountResponse{Mountpoint: mp}, nil
 }
 
 // Path implementation
@@ -141,7 +143,7 @@ func (driver linodeVolumeDriver) Path(req *volume.PathRequest) (*volume.PathResp
 
 	mp := vol.Mountpoint()
 	log.Info("Path(): %s", mp)
-	return &volume.PathResponse{mp}, nil
+	return &volume.PathResponse{Mountpoint: mp}, nil
 }
 
 // Unmount implementation

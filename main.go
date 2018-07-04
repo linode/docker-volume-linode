@@ -50,7 +50,7 @@ func main() {
 
 	// Attach Driver to docker
 	handler := volume.NewHandler(driver)
-	fmt.Println(handler.ServeUnix("linode-volume-driver", 0))
+	fmt.Println(handler.ServeUnix("linode-driver", 0))
 }
 
 func param(key, def, help string) *string {

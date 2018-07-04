@@ -35,21 +35,6 @@ func NewAPI(token, region, host string) API {
 	return &api{token, region, host}
 }
 
-/*
-// VolumeList list available volumes
-func (a *api) VolumeList() []Volume {
-	list := make([]Volume, 0)
-	err := a.EachVolume(func(v Volume) bool {
-		list = append(list, v)
-		return true
-	})
-	if err != nil {
-		return list
-	}
-	return list
-}
-*/
-
 // CreateVolume creates a linode volume
 func (a *api) CreateVolume(name string, m map[string]string) (*Volume, error) {
 
@@ -215,6 +200,9 @@ func (a *api) EachVolume(callBack func(Volume) bool) error {
 		}
 		pages = resp.Pages
 		for _, n := range resp.Data {
+			if n.Region != a.region {
+				continue
+			}
 			if !callBack(n) {
 				break
 			}
