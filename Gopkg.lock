@@ -35,10 +35,16 @@
   version = "v1.7.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/libgolang/config"
+  packages = ["."]
+  revision = "0c28c870bd946084cf8c4fbc44477fb992a3ca53"
+
+[[projects]]
   name = "github.com/libgolang/log"
   packages = ["."]
-  revision = "ca0b1721a1ecc91127fee7332b91e2057633401e"
-  version = "v1.0.5"
+  revision = "09de3c1a747a09da6b97c73e97684e3b0b3b19c4"
+  version = "v1.0.6"
 
 [[projects]]
   name = "github.com/magiconair/properties"
@@ -108,6 +114,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5ebe923a0915608dc4b3a042cddc7c4eacb44487e7b0e78bdcc624f1513bcea9"
+  inputs-digest = "ad6dccca6f57722b280547eae3104d69dc8ecb3bd73acbc247f38a6b8b4ca35f"
   solver-name = "gps-cdcl"
   solver-version = 1
