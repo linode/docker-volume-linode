@@ -12,10 +12,16 @@
 ### Run the driver
 ```
 export LINODE_TOKEN=<token from linode console>
-export REGION=us-west
+export LINODE_REGION=us-west
 export LINODE_LABEL=linode-machine-label-1234
-./docker-volume-linode -linode.token $LINODE_TOKEN -region $REGION -host $LINODE_LABEL
+./docker-volume-linode 
 ```
+or
+
+```
+./docker-volume-linode -linode.token $TOKEN -linode.region $REGION -linode.host $LINODE_LABEL
+```
+
 
 ### Create Volume
 ```
