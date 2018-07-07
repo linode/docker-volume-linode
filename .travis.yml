@@ -3,3 +3,12 @@ language: go
 go:
   - "1.10.x"
   - master
+
+deploy:
+  provider: releases
+  api_key: "GITHUB OAUTH TOKEN"
+  file:
+   - docker-volume-linode
+  skip_cleanup: true
+  on:
+    tags: true
