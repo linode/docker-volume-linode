@@ -28,6 +28,5 @@
   ],
   "network": {
     "type": "host"
-  },
-  "propagatedmount": "/mnt"
+  }
 }
