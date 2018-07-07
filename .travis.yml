@@ -1,11 +1,10 @@
 language: go
 
+os:
+  - linux
+
 matrix:
   include:
-    - go: '1.5'
-    - go: '1.5'
-    - go: '1.6'
-    - go: '1.7'
     - go: '1.8'
     - go: '1.9'
     - go: '1.10.x'
@@ -21,9 +20,8 @@ script:
   - dep ensure
   - go vet $(go list ./... | grep -v /vendor/)
   - go test -v -covermode=count -coverprofile=coverage.out
-  - if [ "${LATEST}" = "true" ]; then GOOS=windows GOARCH=amd64 go build -o docker-volume-linode-windows-amd64.exe; fi
-  - if [ "${LATEST}" = "true" ]; GOOS=linux   GOARCH=amd64 go build -o docker-volume-linode-linux-amd64; fi
-  - GOOS=windows GOARCH=amd64 go build -o docker-volume-linode-windows-amd64.exe
+  - if [ "$LATEST" = "true" ]; then GOOS=windows GOARCH=amd64 go build -o docker-volume-linode-windows-amd64.exe; fi
+  - if [ "$LATEST" = "true" ]; then GOOS=linux   GOARCH=amd64 go build -o docker-volume-linode-linux-amd64; fi
 
 before_deploy:
   - zip docker-volume-linode-${TRAVIS_TAG}-windows-amd64.zip docker-volume-linode-windows-amd64.exe README.md
