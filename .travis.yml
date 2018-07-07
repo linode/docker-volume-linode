@@ -20,11 +20,9 @@ script:
   - dep ensure
   - go vet $(go list ./... | grep -v /vendor/)
   - go test -v -covermode=count -coverprofile=coverage.out
-  - if [ "$LATEST" = "true" ]; then GOOS=windows GOARCH=amd64 go build -o docker-volume-linode-windows-amd64.exe; fi
-  - if [ "$LATEST" = "true" ]; then GOOS=linux   GOARCH=amd64 go build -o docker-volume-linode-linux-amd64; fi
+  - if [ "$LATEST" = "true" ]; then GOOS=linux GOARCH=amd64 go build -o docker-volume-linode-linux-amd64; fi
 
 before_deploy:
-  - zip docker-volume-linode-${TRAVIS_TAG}-windows-amd64.zip docker-volume-linode-windows-amd64.exe README.md
   - zip docker-volume-linode-${TRAVIS_TAG}-linux-amd64.zip docker-volume-linode-linux-amd64 README.md
   - sha256sum *zip > SHASUMS256.txt
 
@@ -34,7 +32,6 @@ deploy:
   api_key:
     secure: mjvcU0lcDEaOduQXKOxz+HUt/oLgRfuCDmjtdK3O8lraSReZSXPgof/yDaFLqrzOTT3SHZ8yrykW4TeZUFDZIdYKsB9iCzuqFhbhykrG4+kbd6B3ToJP6vxczlxR2fMENbIJSCkASn4rZ4Ijvr7gst4jAikiubJ1OYia/xYArIPUcSEoplZeuFzlpVYd133/pJlwT/g+iiTu0rh84kj1fzEDDkDEFP+odmOreSQ5O72sbgXrpPCGPb5GGJKr5pW4vzonmTVZLFO9cuLlPYqtYVV1BuPZ/2V3mDx8nMP9jrNIn7MOc/6RFYs+6ClL2MKzNwP/pktFeyxunlzTcqjMdh0I15Z2WLedKKuQGrfStjzv8JHa354DLQpl6SnMLJ5jgKzWwvrT63K2U/U78MS+eaBEp4xIhroirSepGUM8DU+GsL9OY5fvPBdXiyxgXBHrmddp54CbI6HcQ5xl3LIEDPqbMqH7D1w7wytJVmRvNahfJjBedm/E67kcakQHz4bVeDR3wlbD1IpEtV+Vg8llCkvwoycjXvGe+2lV3HmEFRGq2aAk188RBs0aYfqfDGe8dL5PiHZTqYvxxkPmR7xr3l9DJzi4h7qji/lJBo02m6pD28lzSoded5ElZbM5/V6Hv6mF9aatS24iQ09zpPHi2XjUB920zE2w53WF1WU1vTI=
   file:
-    - docker-volume-linode-${TRAVIS_TAG}-windows-amd64.zip
     - docker-volume-linode-${TRAVIS_TAG}-linux-amd64.zip
     - SHASUMS256.txt
   on:
