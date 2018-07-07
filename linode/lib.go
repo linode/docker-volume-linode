@@ -44,7 +44,7 @@ func (a *api) CreateVolume(name string, m map[string]string) (*Volume, error) {
 		if sizeTmp, err := strconv.Atoi(sizeStr); err == nil {
 			size = sizeTmp
 		} else {
-			return nil, log.Err("Unable to parse volume size `%s`", sizeTmp)
+			return nil, log.Err("Unable to parse volume size `%d`", sizeTmp)
 		}
 	}
 
