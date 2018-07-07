@@ -32,6 +32,7 @@ type api struct {
 
 // NewAPI new API instance
 func NewAPI(token, region, host string) API {
+	log.Debug("Starting API with: Token: %s; Region: %s; Host: %s;", token, region, host)
 	return &api{token, region, host}
 }
 
