@@ -14,19 +14,21 @@ matrix:
   allow_failures:
     - go: '1.11.x'
 
+before_install:
+  - go get -u github.com/golang/dep/cmd/dep
+
 script:
-  - go get -t -v ./...
+  - dep ensure
   - go vet $(go list ./... | grep -v /vendor/)
   - go test -v -covermode=count -coverprofile=coverage.out
+  - if [ "${LATEST}" = "true" ]; then GOOS=windows GOARCH=amd64 go build -o docker-volume-linode-windows-amd64.exe; fi
+  - if [ "${LATEST}" = "true" ]; GOOS=linux   GOARCH=amd64 go build -o docker-volume-linode-linux-amd64; fi
   - GOOS=windows GOARCH=amd64 go build -o docker-volume-linode-windows-amd64.exe
-  - GOOS=linux   GOARCH=amd64 go build -o docker-volume-linode-linux-amd64
-
 
 before_deploy:
   - zip docker-volume-linode-${TRAVIS_TAG}-windows-amd64.zip docker-volume-linode-windows-amd64.exe README.md
   - zip docker-volume-linode-${TRAVIS_TAG}-linux-amd64.zip docker-volume-linode-linux-amd64 README.md
   - sha256sum *zip > SHASUMS256.txt
-
 
 deploy:
   provider: releases
