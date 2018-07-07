@@ -2,6 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/libgolang/docker-volume-linode?status.svg)](https://godoc.org/github.com/libgolang/docker-volume-linode)
 [![Go Report Card](https://goreportcard.com/badge/github.com/libgolang/docker-volume-linode)](https://goreportcard.com/report/github.com/libgolang/docker-volume-linode)
+[![Build Status](https://travis-ci.org/libgolang/docker-volume-linode.svg?branch=master)](https://travis-ci.org/libgolang/docker-volume-linode)
 
 ## Requirements
 - Linux (tested on Ubuntu 18.04, should work with other versions)
