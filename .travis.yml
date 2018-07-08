@@ -25,9 +25,6 @@ script:
   - docker plugin rm -f ${PLUGIN_NAME} || true
   - docker plugin create ${PLUGIN_NAME} ./plugin
 
-script:
-  - docker plugin push ${PLUGIN_NAME}
-
 deploy:
   provider: script
   script: bash docker_push
