@@ -1,5 +1,5 @@
 #!/bin/sh
 
 echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-docker plugin push ${PLUGIN_NAME}
+docker plugin push libgolang/${PLUGIN_NAME}
 
