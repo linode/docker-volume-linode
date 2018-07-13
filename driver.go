@@ -1,40 +1,58 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"syscall"
 	"time"
 
+	"github.com/chiefy/linodego"
 	"github.com/docker/go-plugins-helpers/volume"
-	"github.com/libgolang/docker-volume-linode/linode"
 	"github.com/libgolang/log"
 )
 
 type linodeVolumeDriver struct {
-	linodeAPI linode.API
+	linodeAPI   linodego.Client
+	instanceID  *int
+	region      string
+	linodeLabel *string
 }
 
 // Constructor
-func newLinodeVolumeDriver(linodeAPI linode.API) linodeVolumeDriver {
-	return linodeVolumeDriver{linodeAPI: linodeAPI}
+func newLinodeVolumeDriver(linodeAPI linodego.Client, region string, linodeLabel *string) linodeVolumeDriver {
+	return linodeVolumeDriver{linodeAPI: linodeAPI, region: region, linodeLabel: linodeLabel}
+}
+
+func (driver linodeVolumeDriver) volume(volumeLabel string) (linVol *linodego.Volume, err error) {
+	jsonFilter, _ := json.Marshal(map[string]string{"label": volumeLabel})
+	listOpts := linodego.NewListOptions(0, string(jsonFilter))
+	linVols, lErr := driver.linodeAPI.ListInstanceVolumes(*driver.instanceID, listOpts)
+	if lErr != nil {
+		err = nil
+	} else if len(linVols) != 1 {
+		err = fmt.Errorf("Instance %d Volume with name %s not found", driver.instanceID, linVol)
+	} else {
+		linVol = linVols[0]
+	}
+	return linVol, err
 }
 
 // Get implementation
 func (driver linodeVolumeDriver) Get(req *volume.GetRequest) (*volume.GetResponse, error) {
 	log.Info("Get(%s)", req.Name)
-	linVol := driver.linodeAPI.GetVolumeByName(req.Name)
-	if linVol != nil {
-		log.Info("Get(): req.Name")
+	linVol, err := driver.volume(req.Name)
+	if err != nil {
 		vol := &volume.Volume{
 			Name:       linVol.Label,
-			Mountpoint: linVol.Mountpoint(),
+			Mountpoint: mountPoint(linVol.Label),
 		}
 		return &volume.GetResponse{Volume: vol}, nil
 	}
-	log.Warn("Volume with name %s not found")
-	return nil, fmt.Errorf("Volume with name %s not found", req.Name)
+	log.Warn(err.Error())
+	return nil, err
 }
 
 // List implementation
@@ -43,14 +61,18 @@ func (driver linodeVolumeDriver) List() (*volume.ListResponse, error) {
 
 	//
 	var volumes []*volume.Volume
-	err := driver.linodeAPI.EachVolume(func(linVol linode.Volume) bool {
-		vol := &volume.Volume{
-			Name:       linVol.Label,
-			Mountpoint: linVol.Mountpoint(),
+
+	linVols, err := driver.linodeAPI.ListInstanceVolumes(*driver.instanceID, nil)
+
+	if err != nil {
+		for _, linVol := range linVols {
+			vol := &volume.Volume{
+				Name:       linVol.Label,
+				Mountpoint: mountPoint(linVol.Label),
+			}
+			volumes = append(volumes, vol)
 		}
-		volumes = append(volumes, vol)
-		return true
-	})
+	}
 
 	log.Info("List(): %s", volumes)
 	return &volume.ListResponse{Volumes: volumes}, err
@@ -59,22 +81,24 @@ func (driver linodeVolumeDriver) List() (*volume.ListResponse, error) {
 // Create implementation
 func (driver linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 	log.Info("Create(%s)", req.Name)
-
-	vol, err := driver.linodeAPI.CreateVolume(req.Name, req.Options)
+	// @TODO "Size: req.Options..."" how to specify? default to linode default for now (20G).. This is easier.
+	createOpts := linodego.VolumeCreateOptions{
+		Label:    req.Name,
+		LinodeID: *driver.instanceID,
+	}
+	vol, err := driver.linodeAPI.CreateVolume(createOpts)
 	if err != nil {
 		return log.Err("Create(%s) Failed: %s", req.Name, err)
 	}
 
-	if err = driver.linodeAPI.Attach(req.Name); err != nil {
-		return log.Err("Create(%s) Failed: %s", req.Name, err)
-	}
+	linodego.WaitForVolumeStatus(&driver.linodeAPI, vol.ID, linodego.VolumeActive, 180)
 
 	// format drive
-	log.Info("Creating ext4 filesystem on %s", *vol.FilesystemPath)
-	cmd := exec.Command("mke2fs", "-t", "ext4", *vol.FilesystemPath)
+	log.Info("Creating ext4 filesystem on %s", vol.FilesystemPath)
+	cmd := exec.Command("mke2fs", "-t", "ext4", vol.FilesystemPath)
 	stdOutAndErr, err := cmd.CombinedOutput()
 	if err != nil {
-		return log.Err("Error formatting %s with ext4 filesystem: %s", *vol.FilesystemPath, err)
+		return log.Err("Error formatting %s with ext4 filesystem: %s", vol.FilesystemPath, err)
 	}
 	log.Debug("%s", string(stdOutAndErr))
 	return nil
@@ -82,10 +106,12 @@ func (driver linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 
 // Remove implementation
 func (driver linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
-	if err := driver.linodeAPI.Detach(req.Name); err != nil {
+	linVol, err := driver.volume(req.Name)
+	if ok, err := driver.linodeAPI.DetachVolume(linVol.ID); err != nil {
 		return err
 	}
-	if err := driver.linodeAPI.RemoveVolume(req.Name); err != nil {
+	// @TODO what should we do if we can't detach?
+	if err := driver.linodeAPI.DeleteVolume(linVol.ID); err != nil {
 		return err
 	}
 	return nil
@@ -95,18 +121,21 @@ func (driver linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
 func (driver linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.MountResponse, error) {
 	log.Info("Called Mount %s", req.Name)
 
-	vol := driver.linodeAPI.GetVolumeByName(req.Name)
-	if vol == nil {
-		return nil, log.Err("Volume not found")
+	linVol, err := driver.volume(req.Name)
+	if err != nil {
+		return nil, err
 	}
 
 	// attach
-	if err := driver.linodeAPI.Attach(vol.Label); err != nil {
+	attachOpts := linodego.VolumeAttachOptions{
+		LinodeID: *driver.instanceID,
+	}
+	if ok, err := driver.linodeAPI.AttachVolume(linVol.ID, &attachOpts); err != nil {
 		return nil, log.Err("Error attaching volume to linode: %s", err)
 	}
 
 	// mkdir
-	mp := vol.Mountpoint()
+	mp := mountPoint(linVol.Label)
 	if _, err := os.Stat(mp); os.IsNotExist(err) {
 		log.Info("Creating mountpoint directory: %s", mp)
 		if err = os.MkdirAll(mp, 0755); err != nil {
@@ -114,17 +143,17 @@ func (driver linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.MountR
 		}
 	}
 
-	// Wait for linode to have the volumen attached
+	// Wait for linode to have the volume attached
 	for i := 0; i < 10; i++ {
 		// found, then break
-		if _, err := os.Stat(*vol.FilesystemPath); !os.IsNotExist(err) {
+		if _, err := os.Stat(linVol.FilesystemPath); !os.IsNotExist(err) {
 			break
 		}
-		log.Info("Waiting for linode to attach %s", *vol.FilesystemPath)
+		log.Info("Waiting for linode to attach %s", linVol.FilesystemPath)
 		time.Sleep(time.Second * 2)
 	}
-	if err := syscall.Mount(*vol.FilesystemPath, mp, "ext4", syscall.MS_RELATIME, "data=ordered"); err != nil {
-		return nil, log.Err("Error mouting volume(%s) to directory(%s): %s", *vol.FilesystemPath, mp, err)
+	if err := syscall.Mount(linVol.FilesystemPath, mp, "ext4", syscall.MS_RELATIME, "data=ordered"); err != nil {
+		return nil, log.Err("Error mouting volume(%s) to directory(%s): %s", linVol.FilesystemPath, mp, err)
 	}
 
 	log.Info("Mount Call End: %s", req.Name)
@@ -136,12 +165,12 @@ func (driver linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.MountR
 func (driver linodeVolumeDriver) Path(req *volume.PathRequest) (*volume.PathResponse, error) {
 	log.Info("Path(%s)", req.Name)
 
-	vol := driver.linodeAPI.GetVolumeByName(req.Name)
-	if vol == nil {
-		return nil, log.Err("Volume %s not found", req.Name)
+	linVol, err := driver.volume(req.Name)
+	if err != nil {
+		return nil, err
 	}
 
-	mp := vol.Mountpoint()
+	mp := mountPoint(linVol.Label)
 	log.Info("Path(): %s", mp)
 	return &volume.PathResponse{Mountpoint: mp}, nil
 }
@@ -150,9 +179,11 @@ func (driver linodeVolumeDriver) Path(req *volume.PathRequest) (*volume.PathResp
 func (driver linodeVolumeDriver) Unmount(req *volume.UnmountRequest) error {
 	log.Info("Unmount(%s)", req.Name)
 
-	//
-	vol := driver.linodeAPI.GetVolumeByName(req.Name)
-	if err := syscall.Unmount(vol.Mountpoint(), 0); err != nil {
+	linVol, err := driver.volume(req.Name)
+	if err != nil {
+		return err
+	}
+	if err := syscall.Unmount(mountPoint(linVol.Label), 0); err != nil {
 		return log.Err("Unable to GetVolumeByName(%s): %s", req.Name, err)
 	}
 
@@ -164,4 +195,9 @@ func (driver linodeVolumeDriver) Unmount(req *volume.UnmountRequest) error {
 func (driver linodeVolumeDriver) Capabilities() *volume.CapabilitiesResponse {
 	log.Info("Capabilities(): Scope: global")
 	return &volume.CapabilitiesResponse{Capabilities: volume.Capability{Scope: "global"}}
+}
+
+// mountPoint gets the mount-point for a volume
+func mountPoint(volumeLabel string) string {
+	return path.Join("/mnt/", volumeLabel)
 }
