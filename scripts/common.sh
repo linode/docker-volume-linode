@@ -8,7 +8,6 @@ export PLUGIN_NAME_ROOTFS=docker-volume-linode:rootfs.${TRAVIS_BUILD_NUMBER}
 export PLUGIN_NAME=libgolang/docker-volume-linode:${TRAVIS_BRANCH}.${TRAVIS_BUILD_NUMBER}
 export PLUGIN_NAME_LATEST=libgolang/docker-volume-linode:latest
 
-
 # Build Step
 build () {
 	compile
@@ -47,7 +46,7 @@ compile () {
 	docker build --no-cache -q -t ${PLUGIN_NAME_ROOTFS} .
 }
 
-asseble-plugin-dir () {
+assemble-plugin-dir () {
 	# create plugin
 	mkdir -p ./plugin/rootfs
 	docker create --name tmp  ${PLUGIN_NAME_ROOTFS}
