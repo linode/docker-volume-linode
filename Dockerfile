@@ -14,4 +14,4 @@ CMD ["/go/bin/docker-volume-linode"]
 FROM alpine
 COPY --from=builder /go/bin/docker-volume-linode .
 RUN apk update && apk add ca-certificates e2fsprogs
-CMD ["docker-volume-sshfs"]
+CMD ["./docker-volume-linode"]

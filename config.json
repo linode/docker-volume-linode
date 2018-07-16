@@ -7,7 +7,7 @@
     { "name": "LOG_TRACE",  "settable": [ "value" ], "value": "0" },
     { "name": "LINODE_TOKEN",  "settable": [ "value" ], "value": "" },
     { "name": "LINODE_REGION", "settable": [ "value" ], "value": "us-west" },
-    { "name": "LINODE_HOST",   "settable": [ "value" ], "value": "" }
+    { "name": "LINODE_LABEL",   "settable": [ "value" ], "value": "" }
   ],
   "interface": {
     "socket": "linode-driver.sock",

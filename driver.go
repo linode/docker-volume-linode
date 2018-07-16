@@ -6,12 +6,18 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/chiefy/linodego"
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/libgolang/log"
+)
+
+const (
+	mountOptions = "data=ordered,noatime,nodiratime"
+	mountFSType  = "ext4"
 )
 
 type linodeVolumeDriver struct {
@@ -81,10 +87,17 @@ func (driver linodeVolumeDriver) List() (*volume.ListResponse, error) {
 // Create implementation
 func (driver linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 	log.Info("Create(%s)", req.Name)
-	// @TODO "Size: req.Options..."" how to specify? default to linode default for now (20G).. This is easier.
+	var size int
+	var err error
+	if sizeOpt, ok := req.Options["size"]; ok {
+		if size, err = strconv.Atoi(sizeOpt); err != nil {
+			return log.Err("Invalid size")
+		}
+	}
 	createOpts := linodego.VolumeCreateOptions{
 		Label:    req.Name,
 		LinodeID: *driver.instanceID,
+		Size:     size,
 	}
 	vol, err := driver.linodeAPI.CreateVolume(createOpts)
 	if err != nil {
@@ -94,11 +107,11 @@ func (driver linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 	linodego.WaitForVolumeStatus(&driver.linodeAPI, vol.ID, linodego.VolumeActive, 180)
 
 	// format drive
-	log.Info("Creating ext4 filesystem on %s", vol.FilesystemPath)
-	cmd := exec.Command("mke2fs", "-t", "ext4", vol.FilesystemPath)
+	log.Info("Creating %s filesystem on %s", mountFSType, vol.FilesystemPath)
+	cmd := exec.Command("mke2fs", "-t", mountFSType, vol.FilesystemPath)
 	stdOutAndErr, err := cmd.CombinedOutput()
 	if err != nil {
-		return log.Err("Error formatting %s with ext4 filesystem: %s", vol.FilesystemPath, err)
+		return log.Err("Error formatting %s with %sfilesystem: %s", vol.FilesystemPath, mountFSType, err)
 	}
 	log.Debug("%s", string(stdOutAndErr))
 	return nil
@@ -107,7 +120,10 @@ func (driver linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 // Remove implementation
 func (driver linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
 	linVol, err := driver.volume(req.Name)
-	if ok, err := driver.linodeAPI.DetachVolume(linVol.ID); err != nil {
+	if err != nil {
+		return err
+	}
+	if _, err := driver.linodeAPI.DetachVolume(linVol.ID); err != nil {
 		return err
 	}
 	// @TODO what should we do if we can't detach?
@@ -132,6 +148,8 @@ func (driver linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.MountR
 	}
 	if ok, err := driver.linodeAPI.AttachVolume(linVol.ID, &attachOpts); err != nil {
 		return nil, log.Err("Error attaching volume to linode: %s", err)
+	} else if !ok {
+		return nil, log.Err("Could not attach volume to linode.")
 	}
 
 	// mkdir
@@ -152,7 +170,7 @@ func (driver linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.MountR
 		log.Info("Waiting for linode to attach %s", linVol.FilesystemPath)
 		time.Sleep(time.Second * 2)
 	}
-	if err := syscall.Mount(linVol.FilesystemPath, mp, "ext4", syscall.MS_RELATIME, "data=ordered"); err != nil {
+	if err := syscall.Mount(linVol.FilesystemPath, mp, mountFSType, syscall.MS_RELATIME, mountOptions); err != nil {
 		return nil, log.Err("Error mouting volume(%s) to directory(%s): %s", linVol.FilesystemPath, mp, err)
 	}
 
@@ -199,5 +217,5 @@ func (driver linodeVolumeDriver) Capabilities() *volume.CapabilitiesResponse {
 
 // mountPoint gets the mount-point for a volume
 func mountPoint(volumeLabel string) string {
-	return path.Join("/mnt/", volumeLabel)
+	return path.Join(DefaultMountRoot, volumeLabel)
 }
