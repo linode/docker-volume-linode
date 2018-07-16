@@ -13,3 +13,7 @@ jobs:
       script: ./scripts/test.sh
     - stage: deploy
       script: ./scripts/deploy.sh
+      if: tag =~ ^v\d
+    - stage: deploy-latest
+      if: tag =~ ^v\d
+      script: ./scripts/deploy.sh

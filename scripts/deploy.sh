@@ -1,47 +1,19 @@
 #!/bin/bash
 
-set -e
+# set:
+#   -e: Exit on error.
+#   -x: Display commands.
+set -ex
 
-##############################
 scriptDir=`dirname $(readlink -f $0)`
 source $scriptDir/common.sh
 
-##############################
-echo "go get -u github.com/golang/dep/cmd/dep"
-go get -u github.com/golang/dep/cmd/dep
-##############################
-echo "dep ensure"
-dep ensure
-##############################
-echo "docker build --no-cache -q -t ${PLUGIN_NAME_ROOTFS} ."
-docker build --no-cache -q -t ${PLUGIN_NAME_ROOTFS} .
-##############################
-echo "mkdir -p ./plugin/rootfs"
-mkdir -p ./plugin/rootfs
-##############################
-echo "docker create --name tmp  ${PLUGIN_NAME_ROOTFS}"
-docker create --name tmp  ${PLUGIN_NAME_ROOTFS}
-##############################
-echo "docker export tmp | tar -x -C ./plugin/rootfs"
-docker export tmp | tar -x -C ./plugin/rootfs
-##############################
-echo "cp config.json ./plugin/"
-cp config.json ./plugin/
-##############################
-echo "docker rm -vf tmp"
-docker rm -vf tmp
-##############################
-echo "docker plugin rm -f ${PLUGIN_NAME} || true"
-docker plugin rm -f ${PLUGIN_NAME} || true
-##############################
-echo "docker plugin create ${PLUGIN_NAME} ./plugin"
-docker plugin create ${PLUGIN_NAME} ./plugin
-##############################
+
+# Deploy Step have to build again, it does not remember
+# the docker image built before.
+build
 
 
-##############################
-echo "docker login -u libgolang --password-stdin"
-echo "$DOCKER_PASSWORD" | docker login -u libgolang --password-stdin
-echo "docker plugin push ${PLUGIN_NAME}"
-docker plugin push ${PLUGIN_NAME}
+# Deploy Step
+deploy
 
