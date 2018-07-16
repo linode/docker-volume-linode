@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/chiefy/linodego"
   packages = ["."]
-  revision = "4b110e6c7f9b91a27ad9ff69cc944715aec924d8"
+  revision = "594db5a3c9a60e7013819bba7294968e6e2ce994"
 
 [[projects]]
   name = "github.com/coreos/go-systemd"

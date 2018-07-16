@@ -29,7 +29,27 @@ type linodeVolumeDriver struct {
 
 // Constructor
 func newLinodeVolumeDriver(linodeAPI linodego.Client, region string, linodeLabel *string) linodeVolumeDriver {
-	return linodeVolumeDriver{linodeAPI: linodeAPI, region: region, linodeLabel: linodeLabel}
+	driver := linodeVolumeDriver{linodeAPI: linodeAPI, region: region, linodeLabel: linodeLabel}
+
+	if linodeLabel != nil {
+		jsonFilter, _ := json.Marshal(map[string]string{"label": *linodeLabel})
+		listOpts := linodego.NewListOptions(0, string(jsonFilter))
+		linodes, lErr := driver.linodeAPI.ListInstances(listOpts)
+
+		if lErr != nil {
+			log.Err("Could not determine Linode instance ID from Linode label %s due to error: %s", *linodeLabel, lErr)
+			os.Exit(1)
+		} else if len(linodes) != 1 {
+			log.Err("Could not determine Linode instance ID from Linode label %s", *linodeLabel)
+			os.Exit(1)
+		}
+
+		driver.instanceID = &linodes[0].ID
+	}
+
+	// @TODO what is the plan for this driver if we are running without being tied to a specific Linode?
+
+	return driver
 }
 
 func (driver linodeVolumeDriver) volume(volumeLabel string) (linVol *linodego.Volume, err error) {
