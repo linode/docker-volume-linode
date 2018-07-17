@@ -10,20 +10,23 @@ import (
 )
 
 const (
+	// DefaultSocketAddress docket file to be created for communication with docker
 	DefaultSocketAddress = "/run/docker/plugins/linode-driver.sock"
-	DefaultSocketGID     = 0
-	DefaultMountRoot     = "/mnt/"
+	// DefaultSocketGID Group ownership of DefaultSocketAddress
+	DefaultSocketGID = 0
+	// DefaultMountRoot Directory to use for mounting Linode Volume Devices
+	DefaultMountRoot = "/mnt/"
 )
 
 var (
 	logLevelParamPtr      = config.String("log-level", "DEBUG", "Log Level. Defaults to WARN")
 	logTraceParamPtr      = config.Bool("log-trace", true, "Set Tracing to true")
-	socketAddressParamPtr = config.String("socket-file", DefaultSocketAddress, "Sets the socket file/address")
-	socketGIDParamPtr     = config.Int("socket-gid", DefaultSocketGID, "Sets the socket group id")
-	mountRootParamPtr     = config.String("mount-root", DefaultMountRoot, "Sets the root directory for volume mounts")
+	socketAddressParamPtr = config.String("socket-file", DefaultSocketAddress, "Sets the socket file/address.")
+	socketGIDParamPtr     = config.Int("socket-gid", DefaultSocketGID, "Sets the socket group id.")
+	mountRootParamPtr     = config.String("mount-root", DefaultMountRoot, "Sets the root directory for volume mounts.")
 	linodeTokenParamPtr   = config.String("linode-token", "", "Required Personal Access Token generated in Linode Console.")
-	linodeRegionParamPtr  = config.String("linode-region", "", "Sets the cluster region")
-	linodeLabelParamPtr   = config.String("linode-label", linodeLabel(), "Sets the Linode instance label")
+	linodeRegionParamPtr  = config.String("linode-region", "", "Required linode region.")
+	linodeLabelParamPtr   = config.String("linode-label", "", "Sets the Linode instance label.")
 )
 
 func main() {
@@ -69,10 +72,4 @@ func main() {
 		log.Err("failed to bind to the Unix socket: %v", serr)
 		os.Exit(1)
 	}
-}
-
-// linodeLabel determines the instance label of the Linode where this volume driver is running
-func linodeLabel() string {
-	h, _ := os.Hostname()
-	return h
 }
