@@ -37,10 +37,10 @@ func newLinodeVolumeDriver(linodeAPI linodego.Client, region string, linodeLabel
 		linodes, lErr := driver.linodeAPI.ListInstances(listOpts)
 
 		if lErr != nil {
-			log.Err("Could not determine Linode instance ID from Linode label %s due to error: %s", *linodeLabel, lErr)
+			log.Error("Could not determine Linode instance ID from Linode label %s due to error: %s", *linodeLabel, lErr)
 			os.Exit(1)
 		} else if len(linodes) != 1 {
-			log.Err("Could not determine Linode instance ID from Linode label %s", *linodeLabel)
+			log.Error("Could not determine Linode instance ID from Linode label %s", *linodeLabel)
 			os.Exit(1)
 		}
 
@@ -59,7 +59,7 @@ func (driver linodeVolumeDriver) volume(volumeLabel string) (linVol *linodego.Vo
 	if lErr != nil {
 		err = nil
 	} else if len(linVols) != 1 {
-		err = fmt.Errorf("Instance %d Volume with name %s not found", driver.instanceID, linVol)
+		err = fmt.Errorf("Instance %d Volume with name %s not found", *driver.instanceID, volumeLabel)
 	} else {
 		linVol = linVols[0]
 	}
@@ -81,6 +81,7 @@ func (driver linodeVolumeDriver) Get(req *volume.GetRequest) (*volume.GetRespons
 	return nil, err
 }
 
+// TODO: Listing not working... will address in other commit
 // List implementation
 func (driver linodeVolumeDriver) List() (*volume.ListResponse, error) {
 	log.Info("List()")
@@ -124,7 +125,15 @@ func (driver linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 		return log.Err("Create(%s) Failed: %s", req.Name, err)
 	}
 
-	linodego.WaitForVolumeStatus(&driver.linodeAPI, vol.ID, linodego.VolumeActive, 180)
+	// Wait for volume to be attached to linode
+	if err := linodego.WaitForVolumeStatus(&driver.linodeAPI, vol.ID, linodego.VolumeActive, 180); err != nil {
+		return log.Err("Waiting for volume state returned error: %s", err)
+	}
+
+	// Wait for linode to have the volume attached
+	if err := waitForDeviceFileExists(vol.FilesystemPath, 180); err != nil {
+		return err
+	}
 
 	// format drive
 	log.Info("Creating %s filesystem on %s", mountFSType, vol.FilesystemPath)
@@ -182,14 +191,10 @@ func (driver linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.MountR
 	}
 
 	// Wait for linode to have the volume attached
-	for i := 0; i < 10; i++ {
-		// found, then break
-		if _, err := os.Stat(linVol.FilesystemPath); !os.IsNotExist(err) {
-			break
-		}
-		log.Info("Waiting for linode to attach %s", linVol.FilesystemPath)
-		time.Sleep(time.Second * 2)
+	if err := waitForDeviceFileExists(linVol.FilesystemPath, 180); err != nil {
+		return nil, err
 	}
+
 	if err := syscall.Mount(linVol.FilesystemPath, mp, mountFSType, syscall.MS_RELATIME, mountOptions); err != nil {
 		return nil, log.Err("Error mouting volume(%s) to directory(%s): %s", linVol.FilesystemPath, mp, err)
 	}
@@ -238,4 +243,18 @@ func (driver linodeVolumeDriver) Capabilities() *volume.CapabilitiesResponse {
 // mountPoint gets the mount-point for a volume
 func mountPoint(volumeLabel string) string {
 	return path.Join(DefaultMountRoot, volumeLabel)
+}
+
+func waitForDeviceFileExists(devicePath string, waitSeconds int) error {
+	// Wait for linode to have the volume attached
+	for i := 0; i < waitSeconds; i++ {
+		// found, then break
+		if _, err := os.Stat(devicePath); !os.IsNotExist(err) {
+			return nil
+		}
+		log.Info("Waiting for device %s to be available", devicePath)
+		time.Sleep(time.Second * 1)
+	}
+
+	return log.Err("Waiting for device %s timed out", devicePath)
 }

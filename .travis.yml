@@ -8,9 +8,9 @@ language: go
 jobs:
   include:
     - stage: build
-      script: ./scripts/build.sh
+      script: make build
     - stage: test
-      script: ./scripts/test.sh
+      script: make check
     - stage: deploy
-      script: ./scripts/deploy.sh
+      script: make deploy
       if: tag =~ ^v\d

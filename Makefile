@@ -27,7 +27,7 @@ all: clean build
 
 deploy: build
 	# Login to docker
-	echo "${DOCKER_PASSWORD}" | docker login -u libgolang --password-stdin
+	@echo '${DOCKER_PASSWORD}' | docker login -u libgolang --password-stdin
 	# Push images
 	docker plugin push ${PLUGIN_NAME}
 	docker plugin push ${PLUGIN_NAME_LATEST}
@@ -80,7 +80,7 @@ test-pre-check:
 		echo -en "#############################\nYou must set TEST_* Variables\n#############################\n"; exit 1; fi
 
 test-setup:
-	@docker plugin set libgolang/docker-volume-linode LINODE_TOKEN=${TEST_TOKEN} LINODE_REGION=${TEST_REGION} LINODE_HOST=${TEST_LABEL}
+	@docker plugin set libgolang/docker-volume-linode LINODE_TOKEN=${TEST_TOKEN} LINODE_REGION=${TEST_REGION} LINODE_LABEL=${TEST_LABEL}
 	docker plugin enable libgolang/docker-volume-linode
 
 check:

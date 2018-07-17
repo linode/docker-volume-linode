@@ -41,17 +41,17 @@ func main() {
 
 	// check required parameters (token, region and label)
 	if len(*linodeTokenParamPtr) == 0 {
-		log.Err("LINODE_TOKEN is required.")
+		log.Error("LINODE_TOKEN is required.")
 		os.Exit(1)
 	}
 
 	if len(*linodeRegionParamPtr) == 0 {
-		log.Err("LINODE_REGION is required.")
+		log.Error("LINODE_REGION is required.")
 		os.Exit(1)
 	}
 
 	if len(*linodeLabelParamPtr) == 0 {
-		log.Err("LINODE_LABEL is required.")
+		log.Error("LINODE_LABEL is required.")
 		os.Exit(1)
 	}
 
@@ -70,7 +70,7 @@ func main() {
 	handler := volume.NewHandler(driver)
 	serr := handler.ServeUnix(*socketAddressParamPtr, *socketGIDParamPtr)
 	if serr != nil {
-		log.Err("failed to bind to the Unix socket: %v", serr)
+		log.Error("failed to bind to the Unix socket: %v", serr)
 		os.Exit(1)
 	}
 }
