@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	DefaultLinodeRegion  = "us-west"
 	DefaultSocketAddress = "/run/docker/plugins/linode-driver.sock"
 	DefaultSocketGID     = 0
 	DefaultMountRoot     = "/mnt/"
@@ -23,7 +22,7 @@ var (
 	socketGIDParamPtr     = config.Int("socket-gid", DefaultSocketGID, "Sets the socket group id")
 	mountRootParamPtr     = config.String("mount-root", DefaultMountRoot, "Sets the root directory for volume mounts")
 	linodeTokenParamPtr   = config.String("linode-token", "", "Required Personal Access Token generated in Linode Console.")
-	regionParamPtr        = config.String("linode-region", DefaultLinodeRegion, "Sets the cluster region")
+	linodeRegionParamPtr  = config.String("linode-region", "", "Sets the cluster region")
 	linodeLabelParamPtr   = config.String("linode-label", linodeLabel(), "Sets the Linode instance label")
 )
 
@@ -36,23 +35,32 @@ func main() {
 	log.GetDefaultWriter().SetLevel(log.StrToLevel(*logLevelParamPtr))
 	log.SetTrace(*logTraceParamPtr)
 
-	//
-	log.Debug("============================================================")
-	log.Debug("LINODE_TOKEN: %s", *linodeTokenParamPtr)
-	log.Debug("LINODE_REGION: %s", *regionParamPtr)
-	log.Debug("LINODE_LABEL: %s", *linodeLabelParamPtr)
-	log.Debug("============================================================")
-
+	// check required parameters (token, region and label)
 	if len(*linodeTokenParamPtr) == 0 {
 		log.Err("LINODE_TOKEN is required.")
 		os.Exit(1)
 	}
 
+	if len(*linodeRegionParamPtr) == 0 {
+		log.Err("LINODE_REGION is required.")
+		os.Exit(1)
+	}
+
+	if len(*linodeLabelParamPtr) == 0 {
+		log.Err("LINODE_LABEL is required.")
+		os.Exit(1)
+	}
+
+	//
+	log.Debug("LINODE_TOKEN: %s", *linodeTokenParamPtr)
+	log.Debug("LINODE_REGION: %s", *linodeRegionParamPtr)
+	log.Debug("LINODE_LABEL: %s", *linodeLabelParamPtr)
+
 	// Linode API instance
 	linodeAPI := linodego.NewClient(linodeTokenParamPtr, nil)
 
 	// Driver instance
-	driver := newLinodeVolumeDriver(linodeAPI, *regionParamPtr, linodeLabelParamPtr)
+	driver := newLinodeVolumeDriver(linodeAPI, *linodeRegionParamPtr, linodeLabelParamPtr)
 
 	// Attach Driver to docker
 	handler := volume.NewHandler(driver)
@@ -60,10 +68,6 @@ func main() {
 	if serr != nil {
 		log.Err("failed to bind to the Unix socket: %v", serr)
 		os.Exit(1)
-	}
-
-	for {
-
 	}
 }
 
