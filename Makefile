@@ -103,4 +103,6 @@ $(GOPATH)/bin/dep:
 
 clean-volumes:
 	docker volume ls -q | grep 'test-' | xargs docker volume rm
+clean-installed-plugins:
+	docker plugin ls | grep libgolang | grep -v ID | awk '{print $$1}' | xargs docker plugin rm -f
 

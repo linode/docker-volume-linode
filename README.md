@@ -25,6 +25,9 @@ docker plugin set libgolang/docker-volume-linode LINODE_REGION=<linode region>
 docker plugin set libgolang/docker-volume-linode LINODE_LABEL=<host label>
 ```
 
+List or regions can be found at:  https://api.linode.com/v4/regions
+
+
 ### Enable
 
 ```sh
