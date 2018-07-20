@@ -8,12 +8,11 @@ language: go
 jobs:
   include:
     - stage: build
-      script: ./scripts/build.sh
-    - stage: test
-      script: ./scripts/test.sh
+      script: make build
+    - stage: check
+      script: make check
+    - stage: unit-test
+      script: make unit-test
     - stage: deploy
-      script: ./scripts/deploy.sh
+      script: make deploy
       if: tag =~ ^v\d
-    - stage: deploy-latest
-      if: tag =~ ^v\d
-      script: ./scripts/deploy.sh

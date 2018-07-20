@@ -5,137 +5,157 @@
 [![Build Status](https://travis-ci.org/libgolang/docker-volume-linode.svg?branch=master)](https://travis-ci.org/libgolang/docker-volume-linode)
 
 ## Requirements
+
 - Linux (tested on Ubuntu 18.04, should work with other versions and distros)
 - Docker (tested on version 17, should work with other versions)
 
 ## Installation
 
-- Install
+### Install
 
-  ```
-  docker plugin install libgolang/docker-volume-linode
-  ```
+```sh
+docker plugin install libgolang/docker-volume-linode
+```
 
-- Configuration
+### Configuration
 
-  ```
-  docker plugin set libgolang/docker-volume-linode LINODE_TOKEN=<linode token>
-  docker plugin set libgolang/docker-volume-linode LINODE_REGION=<linode region>
-  docker plugin set libgolang/docker-volume-linode LINODE_LABEL=<host label>
-  ```
+```sh
+docker plugin set libgolang/docker-volume-linode LINODE_TOKEN=<linode token>
+docker plugin set libgolang/docker-volume-linode LINODE_REGION=<linode region>
+docker plugin set libgolang/docker-volume-linode LINODE_LABEL=<host label>
+```
 
-- Enable
+List or regions can be found at:  https://api.linode.com/v4/regions
 
-  ```
-  docker plugin enable libgolang/docker-volume-linode
-  ```
 
+### Enable
+
+```sh
+docker plugin enable libgolang/docker-volume-linode
+```
 
 - Debugging Configuration
 
-  ```
-  docker plugin set libgolang/docker-volume-linode LOG_LEVEL=debug
-  ```
+```sh
+docker plugin set libgolang/docker-volume-linode LOG_LEVEL=debug
+```
 
 
 ## Usage
 
+
+
+
 ### Create Volume
 
-```
+```sh
 $ docker volume create -d linode-driver my-test-volume
+my-test-volume
 ```
-
-  ```
-  my-test-volume
-  ```
 
 ### Create 50G Volume
-```
-$ # docker volume create -o size=50 -d linode-driver my-test-volume-50
-| my-test-volume-50
+
+```sh
+$ docker volume create -o size=50 -d linode-driver my-test-volume-50
+my-test-volume-50
 ```
 
 ### List Volumes
 
-```
+```sh
 $ docker volume ls
-| DRIVER              VOLUME NAME
-| linode-driver       my-test-volume
-| linode-driver       my-test-volume-50
+DRIVER              VOLUME NAME
+linode-driver       my-test-volume
+linode-driver       my-test-volume-50
 ```
 
 ### Remove Volumes
-```
-$ docker volume rm my-test-volume
-| my-test-volume
-$ docker volume rm my-test-volume-50
-| my-test-volume-50
-```
 
+```sh
+$ docker volume rm my-test-volume
+my-test-volume
+
+$ docker volume rm my-test-volume-50
+my-test-volume-50
+```
 
 ### Create and Use Linode Volume
-```
+
+```sh
 $ docker volume create -d linode-driver http-volume
-| http-volume
+http-volume
+
 $ docker run --rm -it -v http-volume:/usr/local/apache2/htdocs/ httpd
-| ...
-| ...
+...
+...
 ```
 
+### Driver Options
 
+| Option Name | Description |
+| --- | --- |
+| linode-token | **Required** The Linode APIv4 [Personal Access Token](https://cloud.linode.com/profile/tokens)
+| linode-label | **Required** The Linode Label to attach block storage volumes to (defaults to the system hostname) |
+| linode-region | The Linode region to create volumes in (inferred if using linode-label, defaults to us-west) |
+| socket-file | Sets the socket file/address (defaults to /run/docker/plugins/linode-driver.sock) |
+| socket-gid | Sets the socket GID (defaults to 0) |
+| mount-root | Sets the root directory for volume mounts (default /mnt) |
+| log-level | Log Level (defaults to WARN) |
+| log-trace | Set Tracing to true (defaults to false) |
 
-# Manual Installation
+## Manual Installation
 
-# Requirements
-- Install Golang: https://golang.org/
+### Requirements
+
+- Install Golang: <https://golang.org/>
 - Get code and Compile: `go get -u github.com/libgolang/docker-volume-linode`
 
 ### Run the driver
 
+```sh
+docker-volume-linode --linode-token=<token from linode console> --linode-region=<linode region> --linode-label=<linode label>
 ```
-$ docker-volume-linode --linode-token=<token from linode console> --linode-region=<linode region> --linode-label=<host label>
-```
+
 or
 
+```sh
+export LINODE_TOKEN=<token from linode console>
+export LINODE_REGION=<linode region>
+export LINODE_LABEL=<linode label>
+docker-volume-linode
 ```
-$ export LINODE_TOKEN=<token from linode console>
-$ export LINODE_REGION=<linode region>
-$ export LINODE_LABEL=<host label>
-$ docker-volume-linode
+
+### Debugging
+
+#### Enable Deug Level on plugin
+
+```sh
+docker plugin set libgolang/docker-volume-linode LOG_LEVEL=debug
 ```
 
+#### Enable Deug Level in manual installation
 
-
-## Debugging
-
-# Enable Deug Level on plugin
-
-  ```
-  docker plugin set libgolang/docker-volume-linode LOG_LEVEL=debug
-  ```
-
-# Enable Deug Level in manual installation
+```sh
+docker-volume-linode --linode-token=<...> --linode-region=<...> --linode-label=<...> --log-level=debug
 ```
-$ docker-volume-linode --linode-token=<...> --linode-region=<...> --linode-label=<...> --log-level=debug
-```
+
 or
 
+```sh
+export DEBUG_LEVEL=debug
+export LINODE_REGION=<...>
+export LINODE_LABEL=<...>
+export LINODE_LABEL=<...>
+docker-volume-linode
 ```
-$ export DEBUG_LEVEL=debug
-$ export LINODE_REGION=<...>
-$ export LINODE_LABEL=<...>
-$ export LINODE_LABEL=<...>
-$ docker-volume-linode
-```
-
 
 ## Tested On
-```
+
+```text
 Ubuntu 18.04 LTS
 ```
 
-```
+```text
 Tested With:
 Client:
  Version:       17.12.1-ce
@@ -154,4 +174,4 @@ Server:
   Built:        Wed Feb 28 17:46:05 2018
   OS/Arch:      linux/amd64
   Experimental: false
-  ```
+```

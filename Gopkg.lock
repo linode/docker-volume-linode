@@ -10,6 +10,14 @@
   version = "v0.4.8"
 
 [[projects]]
+  branch = "master"
+  digest = "1:35641e79ed3328947a972bdd5a242da9ce1f8ff38718e81473c00e123416c5e3"
+  name = "github.com/chiefy/linodego"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "8b573a1a69b79d8f7939722bccecbe51f421a049"
+
+[[projects]]
   digest = "1:5155f7153c694dc8e2efd74d799a27fd54e65778fa3f0c3e17626df724857db9"
   name = "github.com/coreos/go-systemd"
   packages = ["activation"]
@@ -27,14 +35,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:08ea16b5dd27a05b8f31bdad8f6c26c7ac3e0b0d41662e7115f0cd7c69753bd2"
+  digest = "1:fd9d4c708d9b224f57778f886b30760a8f9d821f6842e726b4d2e5dbef940ad2"
   name = "github.com/docker/go-plugins-helpers"
   packages = [
     "sdk",
     "volume",
   ]
   pruneopts = "UT"
-  revision = "61cb8e2334204460162c8bd2417cd43cb71da66f"
+  revision = "39e3ca757823ff8ec10601ed043c02d6d4074be8"
 
 [[projects]]
   digest = "1:865079840386857c809b72ce300be7580cb50d3d3129ce11bf9aa6ca2bc1934a"
@@ -42,6 +50,14 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "5b77d2a35fb0ede96d138fc9a99f5c9b6aef11b4"
+  version = "v1.7.0"
+
+[[projects]]
+  digest = "1:2ff22b45e9aa8f80ea4a4687f6f9d714a31f1b6c074a223671ae7ce837d4389c"
+  name = "github.com/go-resty/resty"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "fccc498aed22c31ff3768bcac00795f94149a21d"
   version = "v1.7.0"
 
 [[projects]]
@@ -86,7 +102,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2fb3eca607b08f5cc98a929f2fe478335c6e2ab87726f872a3bce35d83d2f3ed"
+  digest = "1:130b7bef00e8efbf9411a0d84ae50756a71deead6c0e6600ee8601e5e2308540"
   name = "golang.org/x/net"
   packages = [
     "idna",
@@ -95,18 +111,18 @@
     "publicsuffix",
   ]
   pruneopts = "UT"
-  revision = "4cb1c02c05b0e749b0365f61ae859a8e0cfceed9"
+  revision = "a680a1efc54dd51c040b3b5ce4939ea3cf2ea0d1"
 
 [[projects]]
   branch = "master"
-  digest = "1:c6026af29863bef3d7f476755d52df0799592b0054a11c6ae80b1f37472f1eec"
+  digest = "1:72d6244a51be9611f08994aca19677fcc31676b3e7b742c37e129e6ece4ad8fc"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "7138fd3d9dc8335c567ca206f4333fb75eb05d56"
+  revision = "ac767d655b305d4e9612f5f6e33120b9176c4ad4"
 
 [[projects]]
   digest = "1:7509ba4347d1f8de6ae9be8818b0cd1abc3deeffe28aeaf4be6d4b6b5178d9ca"
@@ -131,22 +147,14 @@
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
 
-[[projects]]
-  digest = "1:a5e84e917d904e61d7493cee0706b2203847986d4e181f528028f8ed3a7c3c5d"
-  name = "gopkg.in/resty.v1"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "fc3ad735b5565cada42d34bc298573fd3fe5adc6"
-  version = "v1.6"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/chiefy/linodego",
     "github.com/docker/go-plugins-helpers/volume",
     "github.com/libgolang/config",
     "github.com/libgolang/log",
-    "gopkg.in/resty.v1",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -30,8 +30,8 @@
   version = "1.0.3"
 
 [[constraint]]
-  name = "gopkg.in/resty.v1"
-  version = "1.6.0"
+  name = "github.com/chiefy/linodego"
+  branch = "master"
 
 [prune]
   go-tests = true

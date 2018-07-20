@@ -3,11 +3,12 @@
   "documentation": "https://docs.docker.com/engine/extend/plugins/",
   "entrypoint": [ "/docker-volume-linode" ],
   "env": [
-    { "name": "LOG_LEVEL",  "settable": [ "value" ], "value": "DEBUG" },
+    { "name": "LOG_LEVEL",  "settable": [ "value" ], "value": "INFO" },
     { "name": "LOG_TRACE",  "settable": [ "value" ], "value": "0" },
+    { "name": "MOUNT_ROOT",  "settable": [ "value" ], "value": "/mnt" },
     { "name": "LINODE_TOKEN",  "settable": [ "value" ], "value": "" },
-    { "name": "LINODE_REGION", "settable": [ "value" ], "value": "us-west" },
-    { "name": "LINODE_HOST",   "settable": [ "value" ], "value": "" }
+    { "name": "LINODE_REGION", "settable": [ "value" ], "value": "" },
+    { "name": "LINODE_LABEL",   "settable": [ "value" ], "value": "" }
   ],
   "interface": {
     "socket": "linode-driver.sock",
