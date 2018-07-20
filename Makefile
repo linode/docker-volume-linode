@@ -93,6 +93,8 @@ check:
 	errcheck
 	golint
 	deadcode
+
+unit-test: $(GOPATH)/bin/dep
 	go test
 
 $(GOPATH)/bin/dep:

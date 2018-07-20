@@ -9,8 +9,10 @@ jobs:
   include:
     - stage: build
       script: make build
-    - stage: test
+    - stage: check
       script: make check
+    - stage: unit-test
+      script: make unit-test
     - stage: deploy
       script: make deploy
       if: tag =~ ^v\d
