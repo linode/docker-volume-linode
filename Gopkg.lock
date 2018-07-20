@@ -11,11 +11,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:47191bba85ac8349891e90bcc10b41e4c4c1aadb80a8809dd2cb2eca0bdd2899"
+  digest = "1:35641e79ed3328947a972bdd5a242da9ce1f8ff38718e81473c00e123416c5e3"
   name = "github.com/chiefy/linodego"
   packages = ["."]
   pruneopts = "UT"
-  revision = "594db5a3c9a60e7013819bba7294968e6e2ce994"
+  revision = "8b573a1a69b79d8f7939722bccecbe51f421a049"
 
 [[projects]]
   digest = "1:5155f7153c694dc8e2efd74d799a27fd54e65778fa3f0c3e17626df724857db9"
@@ -102,7 +102,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2fb3eca607b08f5cc98a929f2fe478335c6e2ab87726f872a3bce35d83d2f3ed"
+  digest = "1:130b7bef00e8efbf9411a0d84ae50756a71deead6c0e6600ee8601e5e2308540"
   name = "golang.org/x/net"
   packages = [
     "idna",
@@ -111,7 +111,7 @@
     "publicsuffix",
   ]
   pruneopts = "UT"
-  revision = "d0887baf81f4598189d4e12a37c6da86f0bba4d0"
+  revision = "a680a1efc54dd51c040b3b5ce4939ea3cf2ea0d1"
 
 [[projects]]
   branch = "master"

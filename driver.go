@@ -162,8 +162,12 @@ func (driver linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.MountR
 		} else if !ok {
 			return nil, log.Err("Could not attach volume to linode.")
 		}
+		if err := linodego.WaitForVolumeLinodeID(&driver.linodeAPI, linVol.ID, &attachOpts.LinodeID, 180); err != nil {
+			return nil, log.Err("Error attaching volume to linode: %s", err)
+		}
 	}
 
+	// wait for kernel to have block device available
 	if err := waitForDeviceFileExists(linVol.FilesystemPath, 180); err != nil {
 		return nil, err
 	}
