@@ -96,6 +96,7 @@ check: $(GOPATH)/bin/dep
 	deadcode
 
 unit-test: $(GOPATH)/bin/dep
+	dep ensure
 	go test
 
 $(GOPATH)/bin/dep:
