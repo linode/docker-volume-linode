@@ -14,16 +14,17 @@ const (
 	DefaultSocketAddress = "/run/docker/plugins/linode-driver.sock"
 	// DefaultSocketGID Group ownership of DefaultSocketAddress
 	DefaultSocketGID = 0
-	// DefaultMountRoot Directory to use for mounting Linode Volume Devices
-	DefaultMountRoot = "/mnt/"
 )
 
 var (
+	// MountRoot Directory to mounting Linode Volume Devices
+	MountRoot = "/mnt"
+
 	logLevelParamPtr      = config.String("log-level", "DEBUG", "Log Level. Defaults to WARN")
 	logTraceParamPtr      = config.Bool("log-trace", true, "Set Tracing to true")
 	socketAddressParamPtr = config.String("socket-file", DefaultSocketAddress, "Sets the socket file/address.")
 	socketGIDParamPtr     = config.Int("socket-gid", DefaultSocketGID, "Sets the socket group id.")
-	mountRootParamPtr     = config.String("mount-root", DefaultMountRoot, "Sets the root directory for volume mounts.")
+	mountRootParamPtr     = config.String("mount-root", MountRoot, "Sets the root directory for volume mounts.")
 	linodeTokenParamPtr   = config.String("linode-token", "", "Required Personal Access Token generated in Linode Console.")
 	linodeRegionParamPtr  = config.String("linode-region", "", "Required linode region.")
 	linodeLabelParamPtr   = config.String("linode-label", "", "Sets the Linode instance label.")
@@ -40,20 +41,22 @@ func main() {
 	log.SetTrace(*logTraceParamPtr)
 
 	// check required parameters (token, region and label)
-	if len(*linodeTokenParamPtr) == 0 {
+	if *linodeTokenParamPtr == "" {
 		log.Error("LINODE_TOKEN is required.")
 		os.Exit(1)
 	}
 
-	if len(*linodeRegionParamPtr) == 0 {
+	if *linodeRegionParamPtr == "" {
 		log.Error("LINODE_REGION is required.")
 		os.Exit(1)
 	}
 
-	if len(*linodeLabelParamPtr) == 0 {
+	if *linodeLabelParamPtr == "" {
 		log.Error("LINODE_LABEL is required.")
 		os.Exit(1)
 	}
+
+	MountRoot = *mountRootParamPtr
 
 	//
 	log.Debug("LINODE_TOKEN: %s", *linodeTokenParamPtr)

@@ -56,9 +56,9 @@ $(PLUGIN_DIR): $(GOPATH)/bin/dep *.go Dockerfile
 test: test-pre-check \
 	build \
 	test-setup \
-	test-create-volume \
 	test-create-volume-50 \
 	test-rm-volume-50 \
+	test-create-volume \
 	test-use-volume \
 	clean-volumes
 
