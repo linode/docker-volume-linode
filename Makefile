@@ -83,12 +83,13 @@ test-setup:
 	@docker plugin set libgolang/docker-volume-linode LINODE_TOKEN=${TEST_TOKEN} LINODE_REGION=${TEST_REGION} LINODE_LABEL=${TEST_LABEL}
 	docker plugin enable libgolang/docker-volume-linode
 
-check:
+check: $(GOPATH)/bin/dep
 	# Tools
 	go get -u github.com/tsenart/deadcode
 	go get -u github.com/kisielk/errcheck
 	go get -u golang.org/x/lint/golint
 	# Run Code Tests
+	dep ensure
 	go vet
 	errcheck
 	golint
