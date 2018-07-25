@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -32,7 +33,7 @@ func newLinodeVolumeDriver(linodeAPI linodego.Client, region string, linodeLabel
 	if linodeLabel != nil {
 		jsonFilter, _ := json.Marshal(map[string]string{"label": *linodeLabel})
 		listOpts := linodego.NewListOptions(0, string(jsonFilter))
-		linodes, lErr := driver.linodeAPI.ListInstances(listOpts)
+		linodes, lErr := driver.linodeAPI.ListInstances(context.Background(), listOpts)
 
 		if lErr != nil {
 			log.Error("Could not determine Linode instance ID from Linode label %s due to error: %s", *linodeLabel, lErr)
@@ -75,7 +76,7 @@ func (driver linodeVolumeDriver) List() (*volume.ListResponse, error) {
 	//
 	var volumes []*volume.Volume
 
-	linVols, err := driver.linodeAPI.ListInstanceVolumes(*driver.instanceID, nil)
+	linVols, err := driver.linodeAPI.ListInstanceVolumes(context.Background(), *driver.instanceID, nil)
 	if err != nil {
 		return nil, log.Err("%s", err)
 	}
@@ -109,7 +110,7 @@ func (driver linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 		LinodeID: *driver.instanceID,
 		Size:     size,
 	}
-	if _, err := driver.linodeAPI.CreateVolume(createOpts); err != nil {
+	if _, err := driver.linodeAPI.CreateVolume(context.Background(), createOpts); err != nil {
 		return log.Err("Create(%s) Failed: %s", req.Name, err)
 	}
 
@@ -125,7 +126,7 @@ func (driver linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
 	}
 
 	// Send detach request
-	if _, err := driver.linodeAPI.DetachVolume(linVol.ID); err != nil {
+	if _, err := driver.linodeAPI.DetachVolume(context.Background(), linVol.ID); err != nil {
 		return log.Err("%s", err)
 	}
 
@@ -135,7 +136,7 @@ func (driver linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
 	}
 
 	// Send Delete request
-	if err := driver.linodeAPI.DeleteVolume(linVol.ID); err != nil {
+	if err := driver.linodeAPI.DeleteVolume(context.Background(), linVol.ID); err != nil {
 		return log.Err("%s", err)
 	}
 	return nil
@@ -157,12 +158,12 @@ func (driver linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.MountR
 	if linVol.LinodeID == nil || *linVol.LinodeID != *driver.instanceID {
 		// attach
 		attachOpts := linodego.VolumeAttachOptions{LinodeID: *driver.instanceID}
-		if ok, err := driver.linodeAPI.AttachVolume(linVol.ID, &attachOpts); err != nil {
+		if ok, err := driver.linodeAPI.AttachVolume(context.Background(), linVol.ID, &attachOpts); err != nil {
 			return nil, log.Err("Error attaching volume to linode: %s", err)
 		} else if !ok {
 			return nil, log.Err("Could not attach volume to linode.")
 		}
-		if err := linodego.WaitForVolumeLinodeID(&driver.linodeAPI, linVol.ID, &attachOpts.LinodeID, 180); err != nil {
+		if err := linodego.WaitForVolumeLinodeID(context.Background(), &driver.linodeAPI, linVol.ID, &attachOpts.LinodeID, 180); err != nil {
 			return nil, log.Err("Error attaching volume to linode: %s", err)
 		}
 	}
@@ -250,7 +251,7 @@ func (driver linodeVolumeDriver) findVolumeByLabel(volumeLabel string) (*linodeg
 	}
 
 	listOpts := linodego.NewListOptions(0, string(jsonFilter))
-	if linVols, err = driver.linodeAPI.ListInstanceVolumes(*driver.instanceID, listOpts); err != nil {
+	if linVols, err = driver.linodeAPI.ListInstanceVolumes(context.Background(), *driver.instanceID, listOpts); err != nil {
 		return nil, err
 	}
 
