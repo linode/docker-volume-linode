@@ -49,14 +49,14 @@ docker plugin set linode/docker-volume-linode LOG_LEVEL=debug
 ### Create Volume
 
 ```sh
-$ docker volume create -d linode-driver my-test-volume
+$ docker volume create -d linode/docker-volume-linode my-test-volume
 my-test-volume
 ```
 
 ### Create 50G Volume
 
 ```sh
-$ docker volume create -o size=50 -d linode-driver my-test-volume-50
+$ docker volume create -o size=50 -d linode/docker-volume-linode my-test-volume-50
 my-test-volume-50
 ```
 
@@ -64,9 +64,16 @@ my-test-volume-50
 
 ```sh
 $ docker volume ls
-DRIVER              VOLUME NAME
-linode-driver       my-test-volume
-linode-driver       my-test-volume-50
+DRIVER                               VOLUME NAME
+linode/docker-volume-linode       my-test-volume
+linode/docker-volume-linode       my-test-volume-50
+```
+
+### Use Volume
+
+```sh
+$ docker run --rm -it -v my-test-volume:/usr/local/apache2/htdocs/ httpd
+...
 ```
 
 ### Remove Volumes
@@ -77,17 +84,6 @@ my-test-volume
 
 $ docker volume rm my-test-volume-50
 my-test-volume-50
-```
-
-### Create and Use Linode Volume
-
-```sh
-$ docker volume create -d linode-driver http-volume
-http-volume
-
-$ docker run --rm -it -v http-volume:/usr/local/apache2/htdocs/ httpd
-...
-...
 ```
 
 ### Driver Options
@@ -102,6 +98,8 @@ $ docker run --rm -it -v http-volume:/usr/local/apache2/htdocs/ httpd
 | mount-root | Sets the root directory for volume mounts (default /mnt) |
 | log-level | Log Level (defaults to WARN) |
 | log-trace | Set Tracing to true (defaults to false) |
+
+Options can be set once for all future uses with [`docker plugin set`](https://docs.docker.com/engine/reference/commandline/plugin_set/#extended-description).
 
 ## Manual Installation
 
@@ -127,13 +125,15 @@ docker-volume-linode
 
 ### Debugging
 
-#### Enable Deug Level on plugin
+#### Enable Debug Level on plugin
+
+The driver name when running manually is the same name as the socket file.
 
 ```sh
-docker plugin set linode/docker-volume-linode LOG_LEVEL=debug
+docker plugin set docker-volume-linode LOG_LEVEL=debug
 ```
 
-#### Enable Deug Level in manual installation
+#### Enable Debug Level in manual installation
 
 ```sh
 docker-volume-linode --linode-token=<...> --linode-region=<...> --linode-label=<...> --log-level=debug
