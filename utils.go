@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"math"
 	"os"
 	"path"
@@ -32,7 +33,7 @@ func waitForDeviceFileExists(devicePath string, waitSeconds int) error {
 func waitForLinodeVolumeDetachment(linodeAPI linodego.Client, volumeID int) error {
 	// Wait for linode to have the volume detached
 	return waitForCondition(180, 2, func() bool {
-		v, err := linodeAPI.GetVolume(volumeID)
+		v, err := linodeAPI.GetVolume(context.Background(), volumeID)
 		if err != nil {
 			log.Error("%s", err)
 			return false

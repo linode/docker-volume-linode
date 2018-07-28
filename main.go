@@ -1,7 +1,10 @@
 package main
 
 import (
+	"net/http"
 	"os"
+
+	"golang.org/x/oauth2"
 
 	"github.com/chiefy/linodego"
 	"github.com/docker/go-plugins-helpers/volume"
@@ -64,7 +67,15 @@ func main() {
 	log.Debug("LINODE_LABEL: %s", *linodeLabelParamPtr)
 
 	// Linode API instance
-	linodeAPI := linodego.NewClient(linodeTokenParamPtr, nil)
+
+	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *linodeTokenParamPtr})
+	oauth2Client := &http.Client{
+		Transport: &oauth2.Transport{
+			Source: tokenSource,
+		},
+	}
+
+	linodeAPI := linodego.NewClient(oauth2Client)
 
 	// Driver instance
 	driver := newLinodeVolumeDriver(linodeAPI, *linodeRegionParamPtr, linodeLabelParamPtr)
