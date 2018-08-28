@@ -6,10 +6,10 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"github.com/chiefy/linodego"
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/libgolang/config"
 	"github.com/libgolang/log"
+	"github.com/linode/linodego"
 )
 
 const (

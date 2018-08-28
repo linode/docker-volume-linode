@@ -2,20 +2,12 @@
 
 
 [[projects]]
-  digest = "1:4179c92d452daa1e0693fd12e094d9b05a1ecb79efcded05c7dae15e539b9f0b"
+  digest = "1:f9ae348e1f793dcf9ed930ed47136a67343dbd6809c5c91391322267f4476892"
   name = "github.com/Microsoft/go-winio"
   packages = ["."]
   pruneopts = "UT"
-  revision = "67921128fb397dd80339870d2193d6b1e6856fd4"
-  version = "v0.4.8"
-
-[[projects]]
-  digest = "1:cc0b849fe53639d4f52c4986589c1805382b42ffa3cc087fddc7c4555349af24"
-  name = "github.com/chiefy/linodego"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "e7bd44d89fc5db41b43b8bce7278550a589d7ab6"
-  version = "v0.2.0"
+  revision = "97e4973ce50b2ff5f09635a57e2b88a037aae829"
+  version = "v0.4.11"
 
 [[projects]]
   digest = "1:5155f7153c694dc8e2efd74d799a27fd54e65778fa3f0c3e17626df724857db9"
@@ -30,8 +22,8 @@
   name = "github.com/docker/go-connections"
   packages = ["sockets"]
   pruneopts = "UT"
-  revision = "3ede32e2033de7505e6500d6c868c2b9ed9f169d"
-  version = "v0.3.0"
+  revision = "7395e3f8aa162843a74ed6d48e79627d9792ac55"
+  version = "v0.4.0"
 
 [[projects]]
   branch = "master"
@@ -53,20 +45,20 @@
   version = "v1.7.0"
 
 [[projects]]
-  digest = "1:2ff22b45e9aa8f80ea4a4687f6f9d714a31f1b6c074a223671ae7ce837d4389c"
+  digest = "1:4a4785749b54b948fd45be3824c6bb1d606578a440657f7cabc79dbbbdc7c476"
   name = "github.com/go-resty/resty"
   packages = ["."]
   pruneopts = "UT"
-  revision = "fccc498aed22c31ff3768bcac00795f94149a21d"
-  version = "v1.7.0"
+  revision = "383acc8a8b687098ee02168c0335a43dfee701f0"
+  version = "v1.9.0"
 
 [[projects]]
-  digest = "1:15042ad3498153684d09f393bbaec6b216c8eec6d61f63dff711de7d64ed8861"
+  digest = "1:97df918963298c287643883209a2c3f642e6593379f97ab400c2a2e219ab647d"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   pruneopts = "UT"
-  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
-  version = "v1.1.0"
+  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
@@ -83,6 +75,14 @@
   pruneopts = "UT"
   revision = "09de3c1a747a09da6b97c73e97684e3b0b3b19c4"
   version = "v1.0.6"
+
+[[projects]]
+  digest = "1:d38820458586511fcb3d95989998a84287f0c60b5b684e2ddb9c28c7da82ccbd"
+  name = "github.com/linode/linodego"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "251edec44a992fc95159d4e0dfac0fa0b7895cc7"
+  version = "v0.4.0"
 
 [[projects]]
   digest = "1:c568d7727aa262c32bdf8a3f7db83614f7af0ed661474b24588de635c20024c7"
@@ -110,7 +110,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0bfd30a30f630c0bdbcf7ec91f52879d6597d4c8e630f93933518ec0722a52ff"
+  digest = "1:094f7bb1f423ae3c6284d70f2c3b305c464b184a5bda684a21e5dc6af8749dc2"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -121,29 +121,29 @@
     "publicsuffix",
   ]
   pruneopts = "UT"
-  revision = "a680a1efc54dd51c040b3b5ce4939ea3cf2ea0d1"
+  revision = "8a410e7b638dca158bf9e766925842f6651ff828"
 
 [[projects]]
   branch = "master"
-  digest = "1:af19f6e6c369bf51ef226e989034cd88a45083173c02ac4d7ab74c9a90d356b7"
+  digest = "1:363b547c971a2b07474c598b6e9ebcb238d556d8a27f37b3895ad20cd50e7281"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
     "internal",
   ]
   pruneopts = "UT"
-  revision = "3d292e4d0cdc3a0113e6d207bb137145ef1de42f"
+  revision = "d2e6202438beef2727060aa7cabdd924d92ebfd9"
 
 [[projects]]
   branch = "master"
-  digest = "1:3364d01296ce7eeca363e3d530ae63a2092d6f8efb85fb3d101e8f6d7de83452"
+  digest = "1:9c99029818a3d4f53bcfd6c0158ca068aeacfecb29283f82a1f9c79b8d2a7da4"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "ac767d655b305d4e9612f5f6e33120b9176c4ad4"
+  revision = "d99a578cf41bfccdeaf48b0845c823a4b8b0ad5e"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -188,10 +188,10 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/chiefy/linodego",
     "github.com/docker/go-plugins-helpers/volume",
     "github.com/libgolang/config",
     "github.com/libgolang/log",
+    "github.com/linode/linodego",
     "golang.org/x/oauth2",
   ]
   solver-name = "gps-cdcl"

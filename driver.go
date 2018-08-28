@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/chiefy/linodego"
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/libgolang/log"
+	"github.com/linode/linodego"
 )
 
 type linodeVolumeDriver struct {
@@ -126,7 +126,7 @@ func (driver linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
 	}
 
 	// Send detach request
-	if _, err := driver.linodeAPI.DetachVolume(context.Background(), linVol.ID); err != nil {
+	if err := driver.linodeAPI.DetachVolume(context.Background(), linVol.ID); err != nil {
 		return log.Err("%s", err)
 	}
 
@@ -162,7 +162,7 @@ func (driver linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.MountR
 			return nil, log.Err("Error attaching volume to linode: %s", err)
 		}
 
-		if err := driver.linodeAPI.WaitForVolumeLinodeID(context.Background(), linVol.ID, &attachOpts.LinodeID, 180); err != nil {
+		if _, err := driver.linodeAPI.WaitForVolumeLinodeID(context.Background(), linVol.ID, &attachOpts.LinodeID, 180); err != nil {
 			return nil, log.Err("Error attaching volume to linode: %s", err)
 		}
 	}

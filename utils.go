@@ -7,9 +7,9 @@ import (
 	"path"
 	"time"
 
-	"github.com/chiefy/linodego"
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/libgolang/log"
+	"github.com/linode/linodego"
 )
 
 // labelToMountPoint gets the mount-point for a volume
