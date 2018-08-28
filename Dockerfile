@@ -1,6 +1,6 @@
 FROM golang:1.10.3-alpine as builder
-COPY . /go/src/github.com/libgolang/docker-volume-linode
-WORKDIR /go/src/github.com/libgolang/docker-volume-linode
+COPY . /go/src/github.com/linode/docker-volume-linode
+WORKDIR /go/src/github.com/linode/docker-volume-linode
 RUN set -ex \
     && apk update && apk add git \
     && apk add --no-cache --virtual .build-deps \

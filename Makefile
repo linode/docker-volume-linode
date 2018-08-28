@@ -18,8 +18,8 @@ PLUGIN_NAME_ROOTFS=docker-volume-linode:rootfs.${TRAVIS_BUILD_NUMBER}
 
 # e.g: docker-volume-linode:master.30
 # e.g: docker-volume-linode:v1.1.30
-PLUGIN_NAME=libgolang/docker-volume-linode:${TRAVIS_BRANCH}.${TRAVIS_BUILD_NUMBER}
-PLUGIN_NAME_LATEST=libgolang/docker-volume-linode:latest
+PLUGIN_NAME=linode/docker-volume-linode:${TRAVIS_BRANCH}.${TRAVIS_BUILD_NUMBER}
+PLUGIN_NAME_LATEST=linode/docker-volume-linode:latest
 
 PLUGIN_DIR=plugin-contents-dir
 
@@ -27,7 +27,7 @@ all: clean build
 
 deploy: build
 	# Login to docker
-	@echo '${DOCKER_PASSWORD}' | docker login -u libgolang --password-stdin
+	@echo '${DOCKER_PASSWORD}' | docker login -u "${DOCKER_USERNAME}" --password-stdin
 	# Push images
 	docker plugin push ${PLUGIN_NAME}
 	docker plugin push ${PLUGIN_NAME_LATEST}
@@ -63,10 +63,10 @@ test: test-pre-check \
 	clean-volumes
 
 test-create-volume:
-	docker volume create -d libgolang/docker-volume-linode test-volume-default-size
+	docker volume create -d linode/docker-volume-linode test-volume-default-size
 
 test-create-volume-50:
-	docker volume create -d libgolang/docker-volume-linode -o size=50 test-volume-50g
+	docker volume create -d linode/docker-volume-linode -o size=50 test-volume-50g
 
 test-rm-volume-50:
 	docker volume rm test-volume-50g
@@ -80,8 +80,8 @@ test-pre-check:
 		echo -en "#############################\nYou must set TEST_* Variables\n#############################\n"; exit 1; fi
 
 test-setup:
-	@docker plugin set libgolang/docker-volume-linode LINODE_TOKEN=${TEST_TOKEN} LINODE_REGION=${TEST_REGION} LINODE_LABEL=${TEST_LABEL}
-	docker plugin enable libgolang/docker-volume-linode
+	@docker plugin set linode/docker-volume-linode LINODE_TOKEN=${TEST_TOKEN} LINODE_REGION=${TEST_REGION} LINODE_LABEL=${TEST_LABEL}
+	docker plugin enable linode/docker-volume-linode
 
 check: $(GOPATH)/bin/dep
 	# Tools
@@ -108,5 +108,5 @@ $(GOPATH)/bin/dep:
 clean-volumes:
 	docker volume ls -q | grep 'test-' | xargs docker volume rm
 clean-installed-plugins:
-	docker plugin ls | grep libgolang | grep -v ID | awk '{print $$1}' | xargs docker plugin rm -f
+	docker plugin ls | grep linode | grep -v ID | awk '{print $$1}' | xargs docker plugin rm -f
 

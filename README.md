@@ -1,8 +1,8 @@
 # Docker Volume Driver For Linode
 
-[![GoDoc](https://godoc.org/github.com/libgolang/docker-volume-linode?status.svg)](https://godoc.org/github.com/libgolang/docker-volume-linode)
-[![Go Report Card](https://goreportcard.com/badge/github.com/libgolang/docker-volume-linode)](https://goreportcard.com/report/github.com/libgolang/docker-volume-linode)
-[![Build Status](https://travis-ci.org/libgolang/docker-volume-linode.svg?branch=master)](https://travis-ci.org/libgolang/docker-volume-linode)
+[![GoDoc](https://godoc.org/github.com/linode/docker-volume-linode?status.svg)](https://godoc.org/github.com/linode/docker-volume-linode)
+[![Go Report Card](https://goreportcard.com/badge/github.com/linode/docker-volume-linode)](https://goreportcard.com/report/github.com/linode/docker-volume-linode)
+[![Build Status](https://travis-ci.org/linode/docker-volume-linode.svg?branch=master)](https://travis-ci.org/linode/docker-volume-linode)
 
 ## Requirements
 
@@ -14,15 +14,15 @@
 ### Install
 
 ```sh
-docker plugin install libgolang/docker-volume-linode
+docker plugin install linode/docker-volume-linode
 ```
 
 ### Configuration
 
 ```sh
-docker plugin set libgolang/docker-volume-linode LINODE_TOKEN=<linode token>
-docker plugin set libgolang/docker-volume-linode LINODE_REGION=<linode region>
-docker plugin set libgolang/docker-volume-linode LINODE_LABEL=<host label>
+docker plugin set linode/docker-volume-linode LINODE_TOKEN=<linode token>
+docker plugin set linode/docker-volume-linode LINODE_REGION=<linode region>
+docker plugin set linode/docker-volume-linode LINODE_LABEL=<host label>
 ```
 
 List or regions can be found at:  https://api.linode.com/v4/regions
@@ -31,13 +31,13 @@ List or regions can be found at:  https://api.linode.com/v4/regions
 ### Enable
 
 ```sh
-docker plugin enable libgolang/docker-volume-linode
+docker plugin enable linode/docker-volume-linode
 ```
 
 - Debugging Configuration
 
 ```sh
-docker plugin set libgolang/docker-volume-linode LOG_LEVEL=debug
+docker plugin set linode/docker-volume-linode LOG_LEVEL=debug
 ```
 
 
@@ -108,7 +108,7 @@ $ docker run --rm -it -v http-volume:/usr/local/apache2/htdocs/ httpd
 ### Requirements
 
 - Install Golang: <https://golang.org/>
-- Get code and Compile: `go get -u github.com/libgolang/docker-volume-linode`
+- Get code and Compile: `go get -u github.com/linode/docker-volume-linode`
 
 ### Run the driver
 
@@ -130,7 +130,7 @@ docker-volume-linode
 #### Enable Deug Level on plugin
 
 ```sh
-docker plugin set libgolang/docker-volume-linode LOG_LEVEL=debug
+docker plugin set linode/docker-volume-linode LOG_LEVEL=debug
 ```
 
 #### Enable Deug Level in manual installation
