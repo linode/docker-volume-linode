@@ -158,12 +158,11 @@ func (driver linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.MountR
 	if linVol.LinodeID == nil || *linVol.LinodeID != *driver.instanceID {
 		// attach
 		attachOpts := linodego.VolumeAttachOptions{LinodeID: *driver.instanceID}
-		if ok, err := driver.linodeAPI.AttachVolume(context.Background(), linVol.ID, &attachOpts); err != nil {
+		if _, err := driver.linodeAPI.AttachVolume(context.Background(), linVol.ID, &attachOpts); err != nil {
 			return nil, log.Err("Error attaching volume to linode: %s", err)
-		} else if !ok {
-			return nil, log.Err("Could not attach volume to linode.")
 		}
-		if err := linodego.WaitForVolumeLinodeID(context.Background(), &driver.linodeAPI, linVol.ID, &attachOpts.LinodeID, 180); err != nil {
+
+		if err := driver.linodeAPI.WaitForVolumeLinodeID(context.Background(), linVol.ID, &attachOpts.LinodeID, 180); err != nil {
 			return nil, log.Err("Error attaching volume to linode: %s", err)
 		}
 	}

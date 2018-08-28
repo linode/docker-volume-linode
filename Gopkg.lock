@@ -2,101 +2,151 @@
 
 
 [[projects]]
+  digest = "1:4179c92d452daa1e0693fd12e094d9b05a1ecb79efcded05c7dae15e539b9f0b"
   name = "github.com/Microsoft/go-winio"
   packages = ["."]
+  pruneopts = "UT"
   revision = "67921128fb397dd80339870d2193d6b1e6856fd4"
   version = "v0.4.8"
 
 [[projects]]
+  digest = "1:cc0b849fe53639d4f52c4986589c1805382b42ffa3cc087fddc7c4555349af24"
   name = "github.com/chiefy/linodego"
   packages = ["."]
-  revision = "724d397345e9c071b1cb6a62f9bb18ed21b6a212"
-  version = "v0.1.0"
+  pruneopts = "UT"
+  revision = "e7bd44d89fc5db41b43b8bce7278550a589d7ab6"
+  version = "v0.2.0"
 
 [[projects]]
+  digest = "1:5155f7153c694dc8e2efd74d799a27fd54e65778fa3f0c3e17626df724857db9"
   name = "github.com/coreos/go-systemd"
   packages = ["activation"]
+  pruneopts = "UT"
   revision = "39ca1b05acc7ad1220e09f133283b8859a8b71ab"
   version = "v17"
 
 [[projects]]
+  digest = "1:5a900d94d96d41ea116d7e6c46717fdf330f35d8bdd116798e2bc0c319f66565"
   name = "github.com/docker/go-connections"
   packages = ["sockets"]
+  pruneopts = "UT"
   revision = "3ede32e2033de7505e6500d6c868c2b9ed9f169d"
   version = "v0.3.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:aeabaa67a712ee97abcf5d244dd0356c0884d56795139bc3ecd135603ffeabc3"
   name = "github.com/docker/go-plugins-helpers"
   packages = [
     "sdk",
-    "volume"
+    "volume",
   ]
+  pruneopts = "UT"
   revision = "39e3ca757823ff8ec10601ed043c02d6d4074be8"
 
 [[projects]]
+  digest = "1:865079840386857c809b72ce300be7580cb50d3d3129ce11bf9aa6ca2bc1934a"
   name = "github.com/fatih/color"
   packages = ["."]
+  pruneopts = "UT"
   revision = "5b77d2a35fb0ede96d138fc9a99f5c9b6aef11b4"
   version = "v1.7.0"
 
 [[projects]]
+  digest = "1:2ff22b45e9aa8f80ea4a4687f6f9d714a31f1b6c074a223671ae7ce837d4389c"
   name = "github.com/go-resty/resty"
   packages = ["."]
+  pruneopts = "UT"
   revision = "fccc498aed22c31ff3768bcac00795f94149a21d"
   version = "v1.7.0"
 
 [[projects]]
+  digest = "1:15042ad3498153684d09f393bbaec6b216c8eec6d61f63dff711de7d64ed8861"
+  name = "github.com/golang/protobuf"
+  packages = ["proto"]
+  pruneopts = "UT"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
+
+[[projects]]
   branch = "master"
+  digest = "1:aa4a0d5ee237ad793fc840e278cd70393369f4d9077a3a067033c3bb0dc15870"
   name = "github.com/libgolang/config"
   packages = ["."]
+  pruneopts = "UT"
   revision = "0c28c870bd946084cf8c4fbc44477fb992a3ca53"
 
 [[projects]]
+  digest = "1:a40313af13d2e3e1f78906d0530ce18ac9630e868b56cb07f2922a6fd28699e5"
   name = "github.com/libgolang/log"
   packages = ["."]
+  pruneopts = "UT"
   revision = "09de3c1a747a09da6b97c73e97684e3b0b3b19c4"
   version = "v1.0.6"
 
 [[projects]]
+  digest = "1:c568d7727aa262c32bdf8a3f7db83614f7af0ed661474b24588de635c20024c7"
   name = "github.com/magiconair/properties"
   packages = ["."]
+  pruneopts = "UT"
   revision = "c2353362d570a7bfa228149c62842019201cfb71"
   version = "v1.8.0"
 
 [[projects]]
+  digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
   name = "github.com/mattn/go-colorable"
   packages = ["."]
+  pruneopts = "UT"
   revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
   version = "v0.0.9"
 
 [[projects]]
+  digest = "1:d4d17353dbd05cb52a2a52b7fe1771883b682806f68db442b436294926bbfafb"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
+  pruneopts = "UT"
   revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
   version = "v0.0.3"
 
 [[projects]]
   branch = "master"
+  digest = "1:0bfd30a30f630c0bdbcf7ec91f52879d6597d4c8e630f93933518ec0722a52ff"
   name = "golang.org/x/net"
   packages = [
+    "context",
+    "context/ctxhttp",
     "idna",
     "internal/socks",
     "proxy",
-    "publicsuffix"
+    "publicsuffix",
   ]
+  pruneopts = "UT"
   revision = "a680a1efc54dd51c040b3b5ce4939ea3cf2ea0d1"
 
 [[projects]]
   branch = "master"
+  digest = "1:af19f6e6c369bf51ef226e989034cd88a45083173c02ac4d7ab74c9a90d356b7"
+  name = "golang.org/x/oauth2"
+  packages = [
+    ".",
+    "internal",
+  ]
+  pruneopts = "UT"
+  revision = "3d292e4d0cdc3a0113e6d207bb137145ef1de42f"
+
+[[projects]]
+  branch = "master"
+  digest = "1:3364d01296ce7eeca363e3d530ae63a2092d6f8efb85fb3d101e8f6d7de83452"
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows"
+    "windows",
   ]
+  pruneopts = "UT"
   revision = "ac767d655b305d4e9612f5f6e33120b9176c4ad4"
 
 [[projects]]
+  digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
   name = "golang.org/x/text"
   packages = [
     "collate",
@@ -112,14 +162,37 @@
     "unicode/bidi",
     "unicode/cldr",
     "unicode/norm",
-    "unicode/rangetable"
+    "unicode/rangetable",
   ]
+  pruneopts = "UT"
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
+
+[[projects]]
+  digest = "1:328b5e4f197d928c444a51a75385f4b978915c0e75521f0ad6a3db976c97a7d3"
+  name = "google.golang.org/appengine"
+  packages = [
+    "internal",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch",
+  ]
+  pruneopts = "UT"
+  revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
+  version = "v1.1.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fc70309f16181aa9ed6deb86c2ff8562598f8e38a10863cf72fc903fbd322881"
+  input-imports = [
+    "github.com/chiefy/linodego",
+    "github.com/docker/go-plugins-helpers/volume",
+    "github.com/libgolang/config",
+    "github.com/libgolang/log",
+    "golang.org/x/oauth2",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
