@@ -4,6 +4,7 @@ TRAVIS_BRANCH ?= test
 TRAVIS_BUILD_NUMBER ?= 9999
 
 # Deploy Arguments
+DOCKER_USERNAME ?= xxxxx
 DOCKER_PASSWORD ?= xxxxx
 
 # Test Arguments
