@@ -73,10 +73,18 @@ func (driver linodeVolumeDriver) Get(req *volume.GetRequest) (*volume.GetRespons
 func (driver linodeVolumeDriver) List() (*volume.ListResponse, error) {
 	log.Info("List()")
 
+	var jsonFilter []byte
+	var err error
+
 	//
 	var volumes []*volume.Volume
 
-	linVols, err := driver.linodeAPI.ListInstanceVolumes(context.Background(), *driver.instanceID, nil)
+	// filters
+	if jsonFilter, err = json.Marshal(map[string]string{"region": driver.region}); err != nil {
+		return nil, err
+	}
+	listOpts := linodego.NewListOptions(0, string(jsonFilter))
+	linVols, err := driver.linodeAPI.ListVolumes(context.Background(), listOpts)
 	if err != nil {
 		return nil, log.Err("%s", err)
 	}
@@ -93,6 +101,7 @@ func (driver linodeVolumeDriver) List() (*volume.ListResponse, error) {
 // Create implementation
 func (driver linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 	log.Info("Create(%s)", req.Name)
+
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
 
@@ -119,6 +128,10 @@ func (driver linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 
 // Remove implementation
 func (driver linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
+
+	driver.mutex.Lock()
+	defer driver.mutex.Unlock()
+
 	//
 	linVol, err := driver.findVolumeByLabel(req.Name)
 	if err != nil {
@@ -145,9 +158,6 @@ func (driver linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
 // Mount implementation
 func (driver linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.MountResponse, error) {
 	log.Info("Called Mount %s", req.Name)
-
-	driver.mutex.Lock()
-	defer driver.mutex.Unlock()
 
 	linVol, err := driver.findVolumeByLabel(req.Name)
 	if err != nil {
@@ -216,9 +226,6 @@ func (driver linodeVolumeDriver) Path(req *volume.PathRequest) (*volume.PathResp
 func (driver linodeVolumeDriver) Unmount(req *volume.UnmountRequest) error {
 	log.Info("Unmount(%s)", req.Name)
 
-	driver.mutex.Lock()
-	defer driver.mutex.Unlock()
-
 	linVol, err := driver.findVolumeByLabel(req.Name)
 	if err != nil {
 		return err
@@ -244,13 +251,12 @@ func (driver linodeVolumeDriver) findVolumeByLabel(volumeLabel string) (*linodeg
 	var err error
 	var linVols []*linodego.Volume
 
-	//if jsonFilter, err = json.Marshal(map[string]string{"label": volumeLabel, "region": driver.region}); err != nil {
-	if jsonFilter, err = json.Marshal(map[string]string{"label": volumeLabel}); err != nil {
+	if jsonFilter, err = json.Marshal(map[string]string{"label": volumeLabel, "region": driver.region}); err != nil {
 		return nil, err
 	}
 
 	listOpts := linodego.NewListOptions(0, string(jsonFilter))
-	if linVols, err = driver.linodeAPI.ListInstanceVolumes(context.Background(), *driver.instanceID, listOpts); err != nil {
+	if linVols, err = driver.linodeAPI.ListVolumes(context.Background(), listOpts); err != nil {
 		return nil, err
 	}
 
