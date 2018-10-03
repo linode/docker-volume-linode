@@ -11,52 +11,53 @@
 
 ## Installation
 
-### Install
+### Install and Configure (one step)
 
 ```sh
-docker plugin install linode/docker-volume-linode
+docker plugin install --alias linode linode/docker-volume-linode linode-token=<linode token> linode-region=<linode region> linode-label=<linode label>
 ```
 
-### Configuration
+
+### Install and Configure (separate steps)
 
 ```sh
-docker plugin set linode/docker-volume-linode LINODE_TOKEN=<linode token>
-docker plugin set linode/docker-volume-linode LINODE_REGION=<linode region>
-docker plugin set linode/docker-volume-linode LINODE_LABEL=<host label>
+docker plugin install --alias linode linode/docker-volume-linode
+docker plugin disable linode
+docker plugin set linode linode-token=<linode token>
+docker plugin set linode linode-region=<linode region>
+docker plugin set linode linode-label=<linode label>
+docker plugin enable linode
 ```
 
-List or regions can be found at:  https://api.linode.com/v4/regions
+\<linode token\>: Token must be generated usigng Linode Control Panel https://login.linode.com.  The generated 	API Token must have Read/Write permission for Volumes and Linodes.
+\<linode regions\>: us-east, us-central, us-southeast, us-west, eu-west, eu-central, ap-south, ap-northeast, ap-northeast-1a
+\<linode label\>: The label given to the host Linode Control Panel.
+
+- For a complete list of regions:  https://api.linode.com/v4/regions
+- For all options see "Driver Options" section
 
 
-### Enable
-
-```sh
-docker plugin enable linode/docker-volume-linode
-```
-
-- Debugging Configuration
-
-```sh
-docker plugin set linode/docker-volume-linode LOG_LEVEL=debug
-```
+### Docker Swarm
+For this volume to work in swarm mode it must be installed in all nodes.
 
 
 ## Usage
 
-
+All examples assume driver has been aliased to `linode`.
 
 
 ### Create Volume
 
+
 ```sh
-$ docker volume create -d linode/docker-volume-linode my-test-volume
+$ docker volume create -d linode my-test-volume
 my-test-volume
 ```
 
 ### Create 50G Volume
 
 ```sh
-$ docker volume create -o size=50 -d linode/docker-volume-linode my-test-volume-50
+$ docker volume create -o size=50 -d linode my-test-volume-50
 my-test-volume-50
 ```
 
@@ -64,9 +65,9 @@ my-test-volume-50
 
 ```sh
 $ docker volume ls
-DRIVER                               VOLUME NAME
-linode/docker-volume-linode       my-test-volume
-linode/docker-volume-linode       my-test-volume-50
+DRIVER              VOLUME NAME
+linode:latest       my-test-volume
+linode:latest       my-test-volume-50
 ```
 
 ### Use Volume
@@ -93,11 +94,12 @@ my-test-volume-50
 | linode-token | **Required** The Linode APIv4 [Personal Access Token](https://cloud.linode.com/profile/tokens)
 | linode-label | **Required** The Linode Label to attach block storage volumes to (defaults to the system hostname) |
 | linode-region | The Linode region to create volumes in (inferred if using linode-label, defaults to us-west) |
-| socket-file | Sets the socket file/address (defaults to /run/docker/plugins/linode-driver.sock) |
+| socket-file | Sets the socket file/address (defaults to /run/docker/plugins/linode.sock) |
 | socket-gid | Sets the socket GID (defaults to 0) |
 | mount-root | Sets the root directory for volume mounts (default /mnt) |
-| log-level | Log Level (defaults to WARN) |
-| log-trace | Set Tracing to true (defaults to false) |
+| log-level | Sets log level to debug,info,warn,error (defaults to info) |
+
+
 
 Options can be set once for all future uses with [`docker plugin set`](https://docs.docker.com/engine/reference/commandline/plugin_set/#extended-description).
 
@@ -114,15 +116,6 @@ Options can be set once for all future uses with [`docker plugin set`](https://d
 docker-volume-linode --linode-token=<token from linode console> --linode-region=<linode region> --linode-label=<linode label>
 ```
 
-or
-
-```sh
-export LINODE_TOKEN=<token from linode console>
-export LINODE_REGION=<linode region>
-export LINODE_LABEL=<linode label>
-docker-volume-linode
-```
-
 ### Debugging
 
 #### Enable Debug Level on plugin
@@ -137,16 +130,6 @@ docker plugin set docker-volume-linode LOG_LEVEL=debug
 
 ```sh
 docker-volume-linode --linode-token=<...> --linode-region=<...> --linode-label=<...> --log-level=debug
-```
-
-or
-
-```sh
-export DEBUG_LEVEL=debug
-export LINODE_REGION=<...>
-export LINODE_LABEL=<...>
-export LINODE_LABEL=<...>
-docker-volume-linode
 ```
 
 ## Tested On

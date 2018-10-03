@@ -5,7 +5,7 @@ import (
 
 	"strings"
 
-	"github.com/libgolang/log"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -16,15 +16,16 @@ const (
 func Format(path string) error {
 	cmd := exec.Command("mke2fs", "-t", formatFSType, path)
 	stdOutAndErr, err := cmd.CombinedOutput()
-	log.Debug("Mke2fs Output:\n%s", string(stdOutAndErr))
+	log.Debugf("Mke2fs Output:\n%s", stdOutAndErr)
 	return err
 }
 
 // Mount mounts device to mountpoint
 func Mount(device string, mountpoint string) error {
+	log.Debugf("calling mount %s %s", device, mountpoint)
 	cmd := exec.Command("mount", device, mountpoint)
 	output, err := cmd.CombinedOutput()
-	log.Debug("Mount Output:\n%s", string(output))
+	log.Debugf("Mount Output:\n%s", string(output))
 	return err
 }
 
@@ -32,14 +33,14 @@ func Mount(device string, mountpoint string) error {
 func Umount(mountpoint string) error {
 	cmd := exec.Command("umount", mountpoint)
 	output, err := cmd.CombinedOutput()
-	log.Debug("Umount Output:\n%s", string(output))
+	log.Debugf("Umount Output:\n%s", string(output))
 	return err
 }
 
 // GetFSType returns the filesystem type from a block device
 // function based on https://github.com/yholkamp/ovh-docker-volume-plugin/blob/master/utils.go
 func GetFSType(device string) string {
-	log.Info("GetFSType(%s)", device)
+	log.Infof("GetFSType(%s)", device)
 	fsType := ""
 	out, err := exec.Command("blkid", device).CombinedOutput()
 	if err != nil {
@@ -55,6 +56,6 @@ func GetFSType(device string) string {
 		}
 	}
 
-	log.Info("GetFSType(): %s", fsType)
+	log.Infof("GetFSType(): %s", fsType)
 	return fsType
 }

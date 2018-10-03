@@ -64,10 +64,10 @@ test: test-pre-check \
 	clean-volumes
 
 test-create-volume:
-	docker volume create -d linode/docker-volume-linode test-volume-default-size
+	docker volume create -d $(PLUGIN_NAME) test-volume-default-size
 
 test-create-volume-50:
-	docker volume create -d linode/docker-volume-linode -o size=50 test-volume-50g
+	docker volume create -d $(PLUGIN_NAME) -o size=50 test-volume-50g
 
 test-rm-volume-50:
 	docker volume rm test-volume-50g
@@ -81,8 +81,8 @@ test-pre-check:
 		echo -en "#############################\nYou must set TEST_* Variables\n#############################\n"; exit 1; fi
 
 test-setup:
-	@docker plugin set linode/docker-volume-linode LINODE_TOKEN=${TEST_TOKEN} LINODE_REGION=${TEST_REGION} LINODE_LABEL=${TEST_LABEL}
-	docker plugin enable linode/docker-volume-linode
+	@docker plugin set $(PLUGIN_NAME) LINODE_TOKEN=${TEST_TOKEN} LINODE_REGION=${TEST_REGION} LINODE_LABEL=${TEST_LABEL}
+	docker plugin enable  $(PLUGIN_NAME)
 
 check: $(GOPATH)/bin/dep
 	# Tools

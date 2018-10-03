@@ -3,26 +3,28 @@
   "documentation": "https://docs.docker.com/engine/extend/plugins/",
   "entrypoint": [ "/docker-volume-linode" ],
   "env": [
-    { "name": "LOG_LEVEL",  "settable": [ "value" ], "value": "INFO" },
-    { "name": "LOG_TRACE",  "settable": [ "value" ], "value": "0" },
-    { "name": "MOUNT_ROOT",  "settable": [ "value" ], "value": "/mnt" },
-    { "name": "LINODE_TOKEN",  "settable": [ "value" ], "value": "" },
-    { "name": "LINODE_REGION", "settable": [ "value" ], "value": "" },
-    { "name": "LINODE_LABEL",   "settable": [ "value" ], "value": "" }
+    { "name": "socket-file",  "settable": [ "value" ], "value": "/run/docker/plugins/linode.sock" },
+    { "name": "socket-gid",  "settable": [ "value" ], "value": "0" },
+    { "name": "mount-root",  "settable": [ "value" ], "value": "/mnt" },
+    { "name": "linode-token",  "settable": [ "value" ], "value": "" },
+    { "name": "linode-region", "settable": [ "value" ], "value": "" },
+    { "name": "linode-label",   "settable": [ "value" ], "value": "" },
+    { "name": "log-level",  "settable": [ "value" ], "value": "info" }
   ],
   "interface": {
-    "socket": "linode-driver.sock",
+    "socket": "linode.sock",
     "types": [ "docker.volumedriver/1.0" ]
   },
   "linux": {
     "allowAllDevices": true,
     "capabilities": [ "CAP_SYS_ADMIN" ]
   },
+  "PropagatedMount": "/mnt",
   "mounts": [
     {
+      "name": "/dev",
       "destination": "/dev",
       "options": [ "rbind" ],
-      "name": "state",
       "source": "/dev",
       "type": "bind"
     }

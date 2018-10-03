@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"errors"
 	"math"
 	"os"
 	"path"
 	"time"
 
 	"github.com/docker/go-plugins-helpers/volume"
-	"github.com/libgolang/log"
 	"github.com/linode/linodego"
+	log "github.com/sirupsen/logrus"
 )
 
 // labelToMountPoint gets the mount-point for a volume
@@ -25,7 +26,7 @@ func waitForDeviceFileExists(devicePath string, waitSeconds int) error {
 		if _, err := os.Stat(devicePath); !os.IsNotExist(err) {
 			return true // condition met
 		}
-		log.Info("Waiting for device %s to be available", devicePath)
+		log.Infof("Waiting for device %s to be available", devicePath)
 		return false
 	})
 }
@@ -35,7 +36,7 @@ func waitForLinodeVolumeDetachment(linodeAPI linodego.Client, volumeID int) erro
 	return waitForCondition(180, 2, func() bool {
 		v, err := linodeAPI.GetVolume(context.Background(), volumeID)
 		if err != nil {
-			log.Error("%s", err)
+			log.Error(err)
 			return false
 		}
 
@@ -57,7 +58,7 @@ func waitForCondition(waitSeconds int, intervalSeconds int, check func() bool) e
 		}
 		time.Sleep(time.Second * time.Duration(intervalSeconds))
 	}
-	return log.Err("waitForCondition timeout")
+	return errors.New("waitForCondition timeout")
 }
 
 // linodeVolumeToDockerVolume converts a linode volume to a docker volume
