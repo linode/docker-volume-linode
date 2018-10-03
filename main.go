@@ -93,16 +93,6 @@ func cfgInt(name string, def int, desc string) *int {
 	return flag.Int(name, newDef, desc)
 }
 
-func cfgBool(name string, def bool, desc string) *bool {
-	newDef := def
-	if val, found := getEnv(name); found {
-		if b, err := strconv.ParseBool(val); err == nil {
-			newDef = b
-		}
-	}
-	return flag.Bool(name, newDef, desc)
-}
-
 func getEnv(name string) (string, bool) {
 	if val, found := os.LookupEnv(name); found {
 		return val, true

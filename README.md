@@ -37,7 +37,9 @@ docker plugin enable linode
 
 
 ### Docker Swarm
-For this volume to work in swarm mode it must be installed in all nodes.
+
+- The plugin must be installed in all nodes.
+- Volumes can be mounted to one container at the time due to volumes been only attachable to one node at the time.
 
 
 ## Usage
