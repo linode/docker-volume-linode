@@ -29,10 +29,9 @@ docker plugin set linode linode-label=<linode label>
 docker plugin enable linode
 ```
 
-\<linode token\>: Token must be generated usigng Linode Control Panel https://login.linode.com.  The generated 	API Token must have Read/Write permission for Volumes and Linodes.
-\<linode regions\>: us-east, us-central, us-southeast, us-west, eu-west, eu-central, ap-south, ap-northeast, ap-northeast-1a
-\<linode label\>: The label given to the host Linode Control Panel.
-
+- \<linode token\>: Token must be generated usigng Linode Control Panel https://login.linode.com.  The generated 	API Token must have Read/Write permission for Volumes and Linodes.
+- \<linode regions\>: us-east, us-central, us-southeast, us-west, eu-west, eu-central, ap-south, ap-northeast, ap-northeast-1a
+- \<linode label\>: The label given to the host Linode Control Panel.
 - For a complete list of regions:  https://api.linode.com/v4/regions
 - For all options see "Driver Options" section
 
