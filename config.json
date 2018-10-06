@@ -13,7 +13,7 @@
   ],
   "interface": {
     "socket": "linode.sock",
-    "types": [ "docker.volumedriver/1.0" ]
+    "types": [ "docker.volumedriver/1.1" ]
   },
   "linux": {
     "allowAllDevices": true,
