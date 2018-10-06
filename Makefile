@@ -19,8 +19,8 @@ PLUGIN_NAME_ROOTFS=docker-volume-linode:rootfs.${TRAVIS_BUILD_NUMBER}
 
 # e.g: docker-volume-linode:master.30
 # e.g: docker-volume-linode:v1.1.30
-PLUGIN_NAME=linode/docker-volume-linode:${TRAVIS_BRANCH}.${TRAVIS_BUILD_NUMBER}
-PLUGIN_NAME_LATEST=linode/docker-volume-linode:latest
+PLUGIN_NAME=${TRAVIS_REPO_SLUG}:${TRAVIS_BRANCH}.${TRAVIS_BUILD_NUMBER}
+PLUGIN_NAME_LATEST=${TRAVIS_REPO_SLUG}:latest
 
 PLUGIN_DIR=plugin-contents-dir
 
