@@ -186,12 +186,7 @@ func (driver *linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
 	}
 
 	// Send detach request
-	if err := api.DetachVolume(context.Background(), linVol.ID); err != nil {
-		return err
-	}
-
-	// Wait for linode to have the volume detached
-	if err := waitForLinodeVolumeDetachment(*api, linVol.ID); err != nil {
+	if err := detachAndWait(api, linVol.ID); err != nil {
 		return err
 	}
 
@@ -216,25 +211,29 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 		return nil, err
 	}
 
-	// If Volume not already attached to this Linode, then attach
-	if linVol.LinodeID == nil || *linVol.LinodeID != driver.instanceID {
-		// attach
-		attachOpts := linodego.VolumeAttachOptions{LinodeID: driver.instanceID}
-		if _, err := api.AttachVolume(context.Background(), linVol.ID, &attachOpts); err != nil {
-			return nil, fmt.Errorf("Error attaching volume to linode: %s", err)
+	// if volume not attached, attach to this linode
+	if linVol.LinodeID == nil {
+		if err := attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
+			return nil, fmt.Errorf("Error attaching volume(%s) to linode: %s", req.Name, err)
+		}
+	} else if *linVol.LinodeID != driver.instanceID { // If volume attached to another linode... send detach request
+		if err := detachAndWait(api, linVol.ID); err != nil {
+			return nil, fmt.Errorf("Error detaching volume from remote linode linode: %s", err)
 		}
 
-		if _, err := api.WaitForVolumeLinodeID(context.Background(), linVol.ID, &attachOpts.LinodeID, 180); err != nil {
-			return nil, fmt.Errorf("Error attaching volume to linode: %s", err)
+		if err := attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
+			return nil, fmt.Errorf("Error attaching volume(%s) to linode: %s", req.Name, err)
 		}
+
 	}
+	// else... linode already attached to current host
 
 	// wait for kernel to have block device available
 	if err := waitForDeviceFileExists(linVol.FilesystemPath, 180); err != nil {
 		return nil, err
 	}
 
-	// Format block device if FS not
+	// Format block device if no FS found
 	if GetFSType(linVol.FilesystemPath) == "" {
 		log.Infof("Formatting device:%s;", linVol.FilesystemPath)
 		if err := Format(linVol.FilesystemPath); err != nil {
@@ -283,7 +282,7 @@ func (driver *linodeVolumeDriver) Unmount(req *volume.UnmountRequest) error {
 	}
 
 	if err := Umount(labelToMountPoint(linVol.Label)); err != nil {
-		return fmt.Errorf("Unable to GetVolumeByName(%s): %s", req.Name, err)
+		return fmt.Errorf("Unable to Unmount(%s): %s", req.Name, err)
 	}
 
 	log.Infof("Unmount(): %s", req.Name)
@@ -322,4 +321,30 @@ func (driver *linodeVolumeDriver) findVolumeByLabel(volumeLabel string) (*linode
 	}
 
 	return linVols[0], nil
+}
+
+func detachAndWait(api *linodego.Client, volumeID int) error {
+	// Send detach request
+	if err := api.DetachVolume(context.Background(), volumeID); err != nil {
+		return fmt.Errorf("Error detaching volumeID(%d): %s", volumeID, err)
+	}
+
+	// Wait for linode to have the volume detached
+	if err := waitForLinodeVolumeDetachment(*api, volumeID); err != nil {
+		return fmt.Errorf("Error waiting for detachment of volumeID(%d): %s", volumeID, err)
+	}
+	return nil
+}
+
+func attachAndWait(api *linodego.Client, volumeID int, linodeID int) error {
+	// attach
+	attachOpts := linodego.VolumeAttachOptions{LinodeID: linodeID}
+	if _, err := api.AttachVolume(context.Background(), volumeID, &attachOpts); err != nil {
+		return fmt.Errorf("Error attaching volume(%d) to linode(%d): %s", volumeID, linodeID, err)
+	}
+
+	if _, err := api.WaitForVolumeLinodeID(context.Background(), volumeID, &linodeID, 180); err != nil {
+		return fmt.Errorf("Error waiting for attachment of volume(%d) to linode(%d): %s", volumeID, linodeID, err)
+	}
+	return nil
 }
