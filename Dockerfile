@@ -1,12 +1,10 @@
-FROM golang:1.10.3-alpine as builder
+FROM golang:1.11.5-alpine as builder
 COPY . /go/src/github.com/linode/docker-volume-linode
 WORKDIR /go/src/github.com/linode/docker-volume-linode
 RUN set -ex \
     && apk update && apk add git \
     && apk add --no-cache --virtual .build-deps \
     gcc libc-dev \
-    && go get -u github.com/golang/dep/cmd/dep \
-    && dep ensure \
     && go install --ldflags '-extldflags "-static"' \
     && apk del .build-deps
 CMD ["/go/bin/docker-volume-linode"]

@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/oauth2"
 	"net/http"
 	"os"
 	"strconv"
 	"sync"
+
+	"golang.org/x/oauth2"
 
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/linode/linodego"
@@ -88,7 +89,7 @@ func (driver *linodeVolumeDriver) Get(req *volume.GetRequest) (*volume.GetRespon
 		return nil, fmt.Errorf("got a NIL volume. Volume may not exist")
 	}
 
-	vol := linodeVolumeToDockerVolume(linVol)
+	vol := linodeVolumeToDockerVolume(*linVol)
 	resp := &volume.GetResponse{Volume: vol}
 
 	log.Infof("Get(): {Name: %s; Mountpoint: %s;}", vol.Name, vol.Mountpoint)
@@ -300,7 +301,7 @@ func (driver *linodeVolumeDriver) Capabilities() *volume.CapabilitiesResponse {
 func (driver *linodeVolumeDriver) findVolumeByLabel(volumeLabel string) (*linodego.Volume, error) {
 	var jsonFilter []byte
 	var err error
-	var linVols []*linodego.Volume
+	var linVols []linodego.Volume
 
 	//
 	api, err := driver.linodeAPI()
@@ -321,5 +322,5 @@ func (driver *linodeVolumeDriver) findVolumeByLabel(volumeLabel string) (*linode
 		return nil, fmt.Errorf("Instance %d Volume with name %s not found", driver.instanceID, volumeLabel)
 	}
 
-	return linVols[0], nil
+	return &linVols[0], nil
 }

@@ -62,7 +62,7 @@ func waitForCondition(waitSeconds int, intervalSeconds int, check func() bool) e
 }
 
 // linodeVolumeToDockerVolume converts a linode volume to a docker volume
-func linodeVolumeToDockerVolume(lv *linodego.Volume) *volume.Volume {
+func linodeVolumeToDockerVolume(lv linodego.Volume) *volume.Volume {
 	v := &volume.Volume{
 		Name:       lv.Label,
 		Mountpoint: labelToMountPoint(lv.Label),

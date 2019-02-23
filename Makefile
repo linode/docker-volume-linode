@@ -1,5 +1,6 @@
 
 # Build Arguments
+TRAVIS_REPO_SLUG ?= linode/docker-volume-linode
 TRAVIS_BRANCH ?= test
 TRAVIS_BUILD_NUMBER ?= 9999
 
@@ -24,6 +25,8 @@ PLUGIN_NAME_LATEST=${TRAVIS_REPO_SLUG}:latest
 
 PLUGIN_DIR=plugin-contents-dir
 
+export GO111MODULE=on
+
 all: clean build
 
 deploy: build
@@ -41,9 +44,8 @@ build: $(PLUGIN_DIR)
 	docker plugin rm -f ${PLUGIN_NAME_LATEST} 2>/dev/null || true
 	docker plugin create ${PLUGIN_NAME_LATEST} ./$(PLUGIN_DIR)
 
-$(PLUGIN_DIR): $(GOPATH)/bin/dep *.go Dockerfile
+$(PLUGIN_DIR): *.go Dockerfile
 	# compile
-	dep ensure
 	docker build --no-cache -q -t ${PLUGIN_NAME_ROOTFS} .
 	# assemble
 	mkdir -p ./$(PLUGIN_DIR)/rootfs
@@ -84,24 +86,20 @@ test-setup:
 	@docker plugin set $(PLUGIN_NAME) LINODE_TOKEN=${TEST_TOKEN} LINODE_REGION=${TEST_REGION} LINODE_LABEL=${TEST_LABEL}
 	docker plugin enable  $(PLUGIN_NAME)
 
-check: $(GOPATH)/bin/dep
+check:
 	# Tools
-	go get -u github.com/tsenart/deadcode
-	go get -u github.com/kisielk/errcheck
-	go get -u golang.org/x/lint/golint
+	
+	GO111MODULE=off go get -u github.com/tsenart/deadcode
+	GO111MODULE=off go get -u github.com/kisielk/errcheck
+	GO111MODULE=off go get -u golang.org/x/lint/golint
 	# Run Code Tests
-	dep ensure
-	go vet
+	GOOS=linux go vet
 	errcheck
 	golint
 	deadcode
 
-unit-test: $(GOPATH)/bin/dep
-	dep ensure
-	go test
-
-$(GOPATH)/bin/dep:
-	go get -u github.com/golang/dep/cmd/dep
+unit-test:
+	GOOS=linux go test
 
 .PHONY clean:
 	rm -fr $(PLUGIN_DIR)
