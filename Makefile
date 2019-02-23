@@ -3,6 +3,7 @@
 TRAVIS_REPO_SLUG ?= linode/docker-volume-linode
 TRAVIS_BRANCH ?= test
 TRAVIS_BUILD_NUMBER ?= 9999
+TRAVIS_REPO_SLUG ?= linode/docker-volume-linode
 
 # Deploy Arguments
 DOCKER_USERNAME ?= xxxxx
@@ -29,12 +30,13 @@ export GO111MODULE=on
 
 all: clean build
 
-deploy: build
-	# Login to docker
-	@echo '${DOCKER_PASSWORD}' | docker login -u "${DOCKER_USERNAME}" --password-stdin
+deploy: docker-login build
 	# Push images
 	docker plugin push ${PLUGIN_NAME}
 	docker plugin push ${PLUGIN_NAME_LATEST}
+docker-login:
+	# Login to docker
+	echo '${DOCKER_PASSWORD}' | docker login -u "${DOCKER_USERNAME}" --password-stdin
 
 build: $(PLUGIN_DIR)
 	# load plugin with versionied tag
