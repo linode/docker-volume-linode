@@ -4,23 +4,25 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/linode/docker-volume-linode)](https://goreportcard.com/report/github.com/linode/docker-volume-linode)
 [![Build Status](https://travis-ci.org/linode/docker-volume-linode.svg?branch=master)](https://travis-ci.org/linode/docker-volume-linode)
 
-This [volume plugin](https://docs.docker.com/engine/extend/plugins_volume/) gives Docker the ability to manage [Linode Block Storage](https://www.linode.com/blockstorage) volumes using `docker volume` commands. 
+This [volume plugin](https://docs.docker.com/engine/extend/plugins_volume/) adds the ability to manage [Linode Block Storage](https://www.linode.com/blockstorage) as [Docker Volumes](https://docs.docker.com/storage/volumes/).
 [Good use cases for volumes](https://docs.docker.com/storage/#good-use-cases-for-volumes) include off-node storage to avoid size constraints or moving a container and the related volume between nodes in a [Swarm](https://github.com/linode/docker-machine-driver-linode#provisioning-docker-swarm).
 
 ## Requirements
 
-- Linux (tested on Ubuntu 18.04, should work with other versions and distros)
+- Linux (tested on Ubuntu 18.04, should work with other versions and distributions)
 - Docker (tested on version 17, should work with other versions)
 
 ## Installation
 
-### Install and Configure (one step)
+When the system hostname is the Linode label, the only required parameter is the `linode-token`:
 
 ```sh
-docker plugin install --alias linode linode/docker-volume-linode linode-token=<linode token> linode-region=<linode region> linode-label=<linode label>
+docker plugin install --alias linode --grant-all-permissions linode/docker-volume-linode linode-token=<linode token>
 ```
 
-### Install and Configure (separate steps)
+### Changing the plugin configuration
+
+The plugin can also be configured (or reconfigured) in multiple steps.
 
 ```sh
 docker plugin install --alias linode linode/docker-volume-linode
@@ -31,18 +33,15 @@ docker plugin set linode linode-label=<linode label>
 docker plugin enable linode
 ```
 
-- \<linode token\>: Token must be generated usigng Linode Control Panel https://login.linode.com.  The generated API Token must have Read/Write permission for Volumes and Linodes.
+- \<linode token\>: You will need a Linode APIv4 Personal Access Token.  Get one here: <https://developers.linode.com/api/v4#section/Personal-Access-Token>.  The API Token must have Read/Write permission for Volumes and Linodes.
 - \<linode regions\>: us-east, us-central, us-southeast, us-west, eu-west, eu-central, ap-south, ap-northeast, ap-northeast-1a
 - \<linode label\>: The label given to the host Linode Control Panel.
 - For a complete list of regions:  https://api.linode.com/v4/regions
 - For all options see "Driver Options" section
 
-
 ### Docker Swarm
 
-- The plugin must be installed in all nodes.
-- Volumes can be mounted to one container at the time due to volumes been only attachable to one node at the time.
-
+Volumes can be mounted to one container at the time because Linux Block Storage volumes can only be attached to one Linode at the time.
 
 ## Usage
 
@@ -59,11 +58,17 @@ my-test-volume
 
 #### Create Options
 
-This driver offers `size` as [driver specific option](https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options).  The `size` option specificies the size (in GB) of the volume to be created.  Volumes must be atleast 10GB in size, so the default is 10GB.
+This driver offers `size` as [driver specific option](https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options).  The `size` option specifies the size (in GB) of the volume to be created.  Volumes must be at least 10GB in size, so the default is 10GB.
 
 ```sh
 $ docker volume create -o size=50 -d linode my-test-volume-50
 my-test-volume-50
+```
+
+Volumes can also be created and attached from `docker run`:
+
+```sh
+docker run -it --rm --mount volume-driver=linode,source=test-vol,destination=/test,volume-opt=size=25 alpine
 ```
 
 ### List Volumes
@@ -97,20 +102,16 @@ my-test-volume-50
 | Option Name | Description |
 | --- | --- |
 | linode-token | **Required** The Linode APIv4 [Personal Access Token](https://cloud.linode.com/profile/tokens)
-| linode-label | **Required** The Linode Label to attach block storage volumes to (defaults to the system hostname) |
+| linode-label | The Linode Label to attach block storage volumes to (defaults to the system hostname) |
 | linode-region | The Linode region to create volumes in (inferred if using linode-label, defaults to us-west) |
 | socket-file | Sets the socket file/address (defaults to /run/docker/plugins/linode.sock) |
 | socket-gid | Sets the socket GID (defaults to 0) |
 | mount-root | Sets the root directory for volume mounts (default /mnt) |
 | log-level | Sets log level to debug,info,warn,error (defaults to info) |
 
-
-
 Options can be set once for all future uses with [`docker plugin set`](https://docs.docker.com/engine/reference/commandline/plugin_set/#extended-description).
 
 ## Manual Installation
-
-### Requirements
 
 - Install Golang: <https://golang.org/>
 - Get code and Compile: `go get -u github.com/linode/docker-volume-linode`
@@ -136,6 +137,10 @@ docker plugin set docker-volume-linode LOG_LEVEL=debug
 ```sh
 docker-volume-linode --linode-token=<...> --linode-region=<...> --linode-label=<...> --log-level=debug
 ```
+
+## Development
+
+A great place to get started is the [Docker Engine managed plugin system] documentation](https://docs.docker.com/engine/extend/#create-a-volumedriver).
 
 ## Tested On
 
@@ -163,3 +168,7 @@ Server:
   OS/Arch:      linux/amd64
   Experimental: false
 ```
+
+## Discussion / Help
+
+Join us at [#linodego](https://gophers.slack.com/messages/CAG93EB2S) on the [gophers slack](https://gophers.slack.com)

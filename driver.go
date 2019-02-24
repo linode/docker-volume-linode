@@ -63,19 +63,27 @@ func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
 
 	driver.linodeAPIPtr = &api
 
-	//
-	if driver.linodeLabel != "" {
-		jsonFilter, _ := json.Marshal(map[string]string{"label": driver.linodeLabel})
-		listOpts := linodego.NewListOptions(0, string(jsonFilter))
-		linodes, lErr := driver.linodeAPIPtr.ListInstances(context.Background(), listOpts)
-
-		if lErr != nil {
-			return nil, fmt.Errorf("Could not determine Linode instance ID from Linode label %s due to error: %s", driver.linodeLabel, lErr)
-		} else if len(linodes) != 1 {
-			return nil, fmt.Errorf("Could not determine Linode instance ID from Linode label %s", driver.linodeLabel)
+	if driver.linodeLabel == "" {
+		var hostnameErr error
+		driver.linodeLabel, hostnameErr = os.Hostname()
+		if hostnameErr != nil {
+			return nil, fmt.Errorf("Could not determine hostname: %s", hostnameErr)
 		}
+	}
 
-		driver.instanceID = linodes[0].ID
+	jsonFilter, _ := json.Marshal(map[string]string{"label": driver.linodeLabel})
+	listOpts := linodego.NewListOptions(0, string(jsonFilter))
+	linodes, lErr := driver.linodeAPIPtr.ListInstances(context.Background(), listOpts)
+
+	if lErr != nil {
+		return nil, fmt.Errorf("Could not determine Linode instance ID from Linode label %s due to error: %s", driver.linodeLabel, lErr)
+	} else if len(linodes) != 1 {
+		return nil, fmt.Errorf("Could not determine Linode instance ID from Linode label %s", driver.linodeLabel)
+	}
+
+	driver.instanceID = linodes[0].ID
+	if driver.region == "" {
+		driver.region = linodes[0].Region
 	}
 
 	return driver.linodeAPIPtr, nil
@@ -276,7 +284,7 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 	}
 
 	if err := Mount(linVol.FilesystemPath, mp); err != nil {
-		return nil, fmt.Errorf("Error mouting volume(%s) to directory(%s): %s", linVol.FilesystemPath, mp, err)
+		return nil, fmt.Errorf("Error mounting volume(%s) to directory(%s): %s", linVol.FilesystemPath, mp, err)
 	}
 
 	log.Infof("Mount Call End: %s", req.Name)
