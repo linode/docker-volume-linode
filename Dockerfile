@@ -1,4 +1,5 @@
 FROM golang:1.11.5-alpine as builder
+ENV GO111MODULE=on
 COPY . /go/src/github.com/linode/docker-volume-linode
 WORKDIR /go/src/github.com/linode/docker-volume-linode
 RUN set -ex \
