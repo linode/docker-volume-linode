@@ -1,6 +1,5 @@
 
 # Build Arguments
-TRAVIS_REPO_SLUG ?= linode/docker-volume-linode
 TRAVIS_BRANCH ?= test
 TRAVIS_BUILD_NUMBER ?= 9999
 TRAVIS_REPO_SLUG ?= linode/docker-volume-linode
@@ -34,6 +33,7 @@ deploy: docker-login build
 	# Push images
 	docker plugin push ${PLUGIN_NAME}
 	docker plugin push ${PLUGIN_NAME_LATEST}
+
 docker-login:
 	# Login to docker
 	echo '${DOCKER_PASSWORD}' | docker login -u "${DOCKER_USERNAME}" --password-stdin

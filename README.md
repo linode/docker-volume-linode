@@ -4,11 +4,13 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/linode/docker-volume-linode)](https://goreportcard.com/report/github.com/linode/docker-volume-linode)
 [![Build Status](https://travis-ci.org/linode/docker-volume-linode.svg?branch=master)](https://travis-ci.org/linode/docker-volume-linode)
 
+This [volume plugin](https://docs.docker.com/engine/extend/plugins_volume/) gives Docker the ability to manage [Linode Block Storage](https://www.linode.com/blockstorage) volumes using `docker volume` commands. 
+[Good use cases for volumes](https://docs.docker.com/storage/#good-use-cases-for-volumes) include off-node storage to avoid size constraints or moving a container and the related volume between nodes in a [Swarm](https://github.com/linode/docker-machine-driver-linode#provisioning-docker-swarm).
+
 ## Requirements
 
 - Linux (tested on Ubuntu 18.04, should work with other versions and distros)
 - Docker (tested on version 17, should work with other versions)
-
 
 ## Installation
 
@@ -17,7 +19,6 @@
 ```sh
 docker plugin install --alias linode linode/docker-volume-linode linode-token=<linode token> linode-region=<linode region> linode-label=<linode label>
 ```
-
 
 ### Install and Configure (separate steps)
 
@@ -30,7 +31,7 @@ docker plugin set linode linode-label=<linode label>
 docker plugin enable linode
 ```
 
-- \<linode token\>: Token must be generated usigng Linode Control Panel https://login.linode.com.  The generated 	API Token must have Read/Write permission for Volumes and Linodes.
+- \<linode token\>: Token must be generated usigng Linode Control Panel https://login.linode.com.  The generated API Token must have Read/Write permission for Volumes and Linodes.
 - \<linode regions\>: us-east, us-central, us-southeast, us-west, eu-west, eu-central, ap-south, ap-northeast, ap-northeast-1a
 - \<linode label\>: The label given to the host Linode Control Panel.
 - For a complete list of regions:  https://api.linode.com/v4/regions
@@ -45,18 +46,20 @@ docker plugin enable linode
 
 ## Usage
 
-All examples assume driver has been aliased to `linode`.
-
+All examples assume the driver has been aliased to `linode`.
 
 ### Create Volume
 
+Linode Block Storage volumes can be created and managed using the [docker volume create](https://docs.docker.com/engine/reference/commandline/volume_create/) command.
 
 ```sh
 $ docker volume create -d linode my-test-volume
 my-test-volume
 ```
 
-### Create 50G Volume
+#### Create Options
+
+This driver offers `size` as [driver specific option](https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options).  The `size` option specificies the size (in GB) of the volume to be created.  Volumes must be atleast 10GB in size, so the default is 10GB.
 
 ```sh
 $ docker volume create -o size=50 -d linode my-test-volume-50

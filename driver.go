@@ -9,8 +9,12 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/docker/docker/api/types/filters"
+
 	"golang.org/x/oauth2"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/linode/linodego"
 	log "github.com/sirupsen/logrus"
@@ -218,8 +222,28 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 			return nil, fmt.Errorf("Error attaching volume(%s) to linode: %s", req.Name, err)
 		}
 	} else if *linVol.LinodeID != driver.instanceID { // If volume attached to another linode... send detach request
+		cli, err := client.NewEnvClient()
+		if err != nil {
+			panic(err)
+		}
+
+		filters := filters.Args{}
+		filters.Add("volume", req.Name)
+		listOpts := types.ContainerListOptions{
+			Filters: filters,
+		}
+
+		containers, err := cli.ContainerList(context.Background(), listOpts)
+		if err != nil {
+			return nil, fmt.Errorf("Error detecting containers using volume from remote linode: %s", err)
+		}
+
+		if len(containers) > 0 {
+			return nil, fmt.Errorf("Error detaching volume from remote linode: volume in use by %s", containers[0].ID)
+		}
+
 		if err := detachAndWait(api, linVol.ID); err != nil {
-			return nil, fmt.Errorf("Error detaching volume from remote linode linode: %s", err)
+			return nil, fmt.Errorf("Error detaching volume from remote linode: %s", err)
 		}
 
 		if err := attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
