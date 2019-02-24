@@ -42,8 +42,6 @@ func newLinodeVolumeDriver(region string, linodeLabel string, linodeToken string
 }
 
 func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
-
-	//
 	if driver.linodeToken == "" {
 		return nil, fmt.Errorf("Linode Token required.  Set the token by calling \"docker plugin set <plugin-name> linode-token=<linode token>\"")
 	}
@@ -52,7 +50,6 @@ func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
 		return driver.linodeAPIPtr, nil
 	}
 
-	//
 	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *linodeTokenParamPtr})
 	oauth2Client := &http.Client{
 		Transport: &oauth2.Transport{
@@ -61,6 +58,9 @@ func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
 	}
 
 	api := linodego.NewClient(oauth2Client)
+	ua := fmt.Sprintf("docker-volume-linode linodego/%s", linodego.Version)
+	api.SetUserAgent(ua)
+
 	driver.linodeAPIPtr = &api
 
 	//
