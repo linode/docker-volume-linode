@@ -58,7 +58,7 @@ func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
 	}
 
 	api := linodego.NewClient(oauth2Client)
-	ua := fmt.Sprintf("docker-volume-linode linodego/%s", linodego.Version)
+	ua := fmt.Sprintf("docker-volume-linode/%s linodego/%s", VERSION, linodego.Version)
 	api.SetUserAgent(ua)
 
 	driver.linodeAPIPtr = &api
