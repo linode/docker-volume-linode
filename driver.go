@@ -271,7 +271,7 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 	if linVol.LinodeID == nil {
 		// Not attached, then attach volume
 		if err = attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Error attaching volume(%s) to linode: %s", req.Name, err)
 		}
 	} else if *linVol.LinodeID != driver.instanceID {
 		// check volume not in use, then detach and attach
