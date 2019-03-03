@@ -12,9 +12,9 @@ import (
 
 	"github.com/docker/docker/api/types/filters"
 
+	"github.com/docker/docker/api/types"
 	"golang.org/x/oauth2"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/linode/linodego"
@@ -28,6 +28,7 @@ type linodeVolumeDriver struct {
 	linodeToken  string
 	mutex        *sync.Mutex
 	linodeAPIPtr *linodego.Client
+	docker       *client.Client
 }
 
 const (
@@ -35,11 +36,12 @@ const (
 )
 
 // Constructor
-func newLinodeVolumeDriver(linodeLabel string, linodeToken string) linodeVolumeDriver {
+func newLinodeVolumeDriver(linodeLabel string, linodeToken string, docker *client.Client) linodeVolumeDriver {
 	driver := linodeVolumeDriver{
 		linodeToken: linodeToken,
 		linodeLabel: linodeLabel,
 		mutex:       &sync.Mutex{},
+		docker:      docker,
 	}
 	if _, err := driver.linodeAPI(); err != nil {
 		log.Fatalf("Could not initialize Linode API: %s", err)
@@ -121,7 +123,7 @@ func (driver *linodeVolumeDriver) Get(req *volume.GetRequest) (*volume.GetRespon
 		return nil, fmt.Errorf("got a NIL volume. Volume may not exist")
 	}
 
-	vol := linodeVolumeToDockerVolume(*linVol)
+	vol := linodeVolumeToDockerVolume(linVol)
 	resp := &volume.GetResponse{Volume: vol}
 
 	log.Infof("Get(): {Name: %s; Mountpoint: %s;}", vol.Name, vol.Mountpoint)
@@ -158,7 +160,7 @@ func (driver *linodeVolumeDriver) List() (*volume.ListResponse, error) {
 	}
 	log.Debugf("Got %d volume count from api", len(linVols))
 	for _, linVol := range linVols {
-		vol := linodeVolumeToDockerVolume(linVol)
+		vol := linodeVolumeToDockerVolume(&linVol)
 		log.Debugf("Volume: %+v", vol)
 		volumes = append(volumes, vol)
 	}
@@ -267,28 +269,14 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 
 	// if volume not attached, attach to this linode
 	if linVol.LinodeID == nil {
-		if err := attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
-			return nil, fmt.Errorf("Error attaching volume(%s) to linode: %s", req.Name, err)
+		// Not attached, then attach volume
+		if err = attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
+			return nil, err
 		}
-	} else if *linVol.LinodeID != driver.instanceID { // If volume attached to another linode... send detach request
-		cli, err := client.NewEnvClient()
-		if err != nil {
-			panic(err)
-		}
-
-		filters := filters.Args{}
-		filters.Add("volume", req.Name)
-		listOpts := types.ContainerListOptions{
-			Filters: filters,
-		}
-
-		containers, err := cli.ContainerList(context.Background(), listOpts)
-		if err != nil {
-			return nil, fmt.Errorf("Error detecting containers using volume from remote linode: %s", err)
-		}
-
-		if len(containers) > 0 {
-			return nil, fmt.Errorf("Error detaching volume from remote linode: volume in use by %s", containers[0].ID)
+	} else if *linVol.LinodeID != driver.instanceID {
+		// check volume not in use, then detach and attach
+		if err := validateVolumeNotInUse(driver.docker, linVol.Label); err != nil {
+			return nil, fmt.Errorf("Error attaching volume: %s", err)
 		}
 
 		if err := detachAndWait(api, linVol.ID); err != nil {
@@ -298,9 +286,12 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 		if err := attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
 			return nil, fmt.Errorf("Error attaching volume(%s) to linode: %s", req.Name, err)
 		}
-
+	} else {
+		// Already attached to this Linode, then check if not in use
+		if err := validateVolumeNotInUse(driver.docker, linVol.Label); err != nil {
+			return nil, fmt.Errorf("Error attaching volume: %s", err)
+		}
 	}
-	// else... linode already attached to current host
 
 	// wait for kernel to have block device available
 	if err := waitForDeviceFileExists(linVol.FilesystemPath, 300); err != nil {
@@ -366,7 +357,14 @@ func (driver *linodeVolumeDriver) Unmount(req *volume.UnmountRequest) error {
 		return fmt.Errorf("Unable to Unmount(%s): %s", req.Name, err)
 	}
 
-	log.Infof("Unmount(): %s", req.Name)
+	// Detach after unmmounting
+	api, err := driver.linodeAPI()
+	if err != nil {
+		return err
+	}
+	if err = detachAndWait(api, linVol.ID); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -427,5 +425,27 @@ func attachAndWait(api *linodego.Client, volumeID int, linodeID int) error {
 	if _, err := api.WaitForVolumeLinodeID(context.Background(), volumeID, &linodeID, 300); err != nil {
 		return fmt.Errorf("Error waiting for attachment of volume(%d) to linode(%d): %s", volumeID, linodeID, err)
 	}
+	return nil
+}
+
+// validateVolumeNotInUse checks if volume not in use by another container.
+// If volume is in use, it returns an error or null otherwise
+func validateVolumeNotInUse(docker *client.Client, volumeName string) error {
+	// check volume not in use, then detach and attach
+	filters := filters.Args{}
+	filters.Add("volume", volumeName)
+	listOpts := types.ContainerListOptions{
+		Filters: filters,
+	}
+
+	containers, err := docker.ContainerList(context.Background(), listOpts)
+	if err != nil {
+		return fmt.Errorf("Error quering docker for attached volume: %s", err)
+	}
+
+	if len(containers) > 0 {
+		return fmt.Errorf("Volume '%s' in use by another container: %s", volumeName, containers[0].ID)
+	}
+
 	return nil
 }

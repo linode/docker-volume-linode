@@ -1,8 +1,8 @@
 FROM golang:1.11.5-alpine as builder
 ENV GO111MODULE=on
 ARG VERSION=0
-COPY . /go/src/github.com/linode/docker-volume-linode
-WORKDIR /go/src/github.com/linode/docker-volume-linode
+COPY . /src
+WORKDIR /src
 RUN apk update && apk add git \
     && apk add --no-cache --virtual .build-deps gcc libc-dev \
     && go install --ldflags "-extldflags '-static' -X main.VERSION=$VERSION" \

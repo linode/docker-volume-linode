@@ -61,8 +61,9 @@ func waitForCondition(waitSeconds int, intervalSeconds int, check func() bool) e
 	return errors.New("waitForCondition timeout")
 }
 
-// linodeVolumeToDockerVolume converts a linode volume to a docker volume
-func linodeVolumeToDockerVolume(lv linodego.Volume) *volume.Volume {
+// linodeVolumeToDockerVolume converts a linodego.Volume struct to a volume.Volume
+// struct
+func linodeVolumeToDockerVolume(lv *linodego.Volume) *volume.Volume {
 	v := &volume.Volume{
 		Name:       lv.Label,
 		Mountpoint: labelToMountPoint(lv.Label),
