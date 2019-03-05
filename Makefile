@@ -48,7 +48,8 @@ build: $(PLUGIN_DIR)
 
 $(PLUGIN_DIR): *.go Dockerfile
 	# compile
-	docker build --build-arg VERSION="${TRAVIS_BUILD_NUMBER}" --no-cache -q -t ${PLUGIN_NAME_ROOTFS} .
+	docker build --build-arg VERSION="$(shell git describe --always)" --no-cache -q -t ${PLUGIN_NAME_ROOTFS} .
+
 	# assemble
 	mkdir -p ./$(PLUGIN_DIR)/rootfs
 	docker create --name tmp  ${PLUGIN_NAME_ROOTFS}
