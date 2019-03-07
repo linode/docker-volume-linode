@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"flag"
+
 	"github.com/docker/go-plugins-helpers/volume"
 	log "github.com/sirupsen/logrus"
 )
@@ -17,8 +18,10 @@ const (
 	DefaultSocketGID = 0
 )
 
-var (
+// VERSION set by --ldflags "-X main.VERSION=$VERSION"
+var VERSION string
 
+var (
 	// MountRoot mount point for all volumes
 	MountRoot             = "/mnt"
 	socketGIDParamPtr     = cfgInt("socket-gid", DefaultSocketGID, "Sets the socket group id.")
@@ -41,6 +44,8 @@ func main() {
 		level = log.InfoLevel
 	}
 	log.SetLevel(level)
+
+	log.Infof("docker-volume-linode/%s", VERSION)
 
 	// check required parameters (token, region and label)
 	if *linodeTokenParamPtr == "" {
