@@ -34,7 +34,7 @@ docker plugin enable linode
 ```
 
 - \<linode token\>: You will need a Linode APIv4 Personal Access Token.  Get one here: <https://developers.linode.com/api/v4#section/Personal-Access-Token>.  The API Token must have Read/Write permission for Volumes and Linodes.
-- \<linode regions\>: us-east, us-central, us-southeast, us-west, eu-west, eu-central, ap-south, ap-northeast, ap-northeast-1a
+- \<linode regions\>: `us-east`, `us-central`, `us-west`, `eu-west`, `eu-central`, `ap-south`, `ap-northeast`.  [Some Linode regions do not have Block Storage Volume support](https://www.linode.com/community/questions/344/when-will-block-storage-be-available-in-my-datacenter), such as: `us-southeast` and `ap-northeast-1a`.
 - \<linode label\>: The label given to the host Linode Control Panel.
 - For a complete list of regions:  https://api.linode.com/v4/regions
 - For all options see "Driver Options" section
