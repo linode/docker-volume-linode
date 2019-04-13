@@ -28,16 +28,14 @@ The plugin can also be configured (or reconfigured) in multiple steps.
 docker plugin install --alias linode linode/docker-volume-linode
 docker plugin disable linode
 docker plugin set linode linode-token=<linode token>
-docker plugin set linode linode-region=<linode region>
 docker plugin set linode linode-label=<linode label>
 docker plugin enable linode
 ```
 
 - \<linode token\>: You will need a Linode APIv4 Personal Access Token.  Get one here: <https://developers.linode.com/api/v4#section/Personal-Access-Token>.  The API Token must have Read/Write permission for Volumes and Linodes.
-- \<linode regions\>: `us-east`, `us-central`, `us-west`, `eu-west`, `eu-central`, `ap-south`, `ap-northeast`.  [Some Linode regions do not have Block Storage Volume support](https://www.linode.com/community/questions/344/when-will-block-storage-be-available-in-my-datacenter), such as: `us-southeast` and `ap-northeast-1a`.
-- \<linode label\>: The label given to the host Linode Control Panel.
-- For a complete list of regions:  https://api.linode.com/v4/regions
-- For all options see "Driver Options" section
+- \<linode label\>: The label given to the host Linode Control Panel. Defaults to the system hostname.
+  [Some Linode regions do not have Block Storage Volume support](https://www.linode.com/community/questions/344/when-will-block-storage-be-available-in-my-datacenter), such as: `us-southeast` and `ap-northeast-1a`.  For a complete list of regions:  https://api.linode.com/v4/regions
+- For all options see [Driver Options](#Driver-Options) section
 
 ### Docker Swarm
 
@@ -103,7 +101,6 @@ my-test-volume-50
 | --- | --- |
 | linode-token | **Required** The Linode APIv4 [Personal Access Token](https://cloud.linode.com/profile/tokens)
 | linode-label | The Linode Label to attach block storage volumes to (defaults to the system hostname) |
-| linode-region | The Linode region to create volumes in (inferred if using linode-label, defaults to us-west) |
 | socket-file | Sets the socket file/address (defaults to /run/docker/plugins/linode.sock) |
 | socket-gid | Sets the socket GID (defaults to 0) |
 | mount-root | Sets the root directory for volume mounts (default /mnt) |
@@ -119,7 +116,7 @@ Options can be set once for all future uses with [`docker plugin set`](https://d
 ### Run the driver
 
 ```sh
-docker-volume-linode --linode-token=<token from linode console> --linode-region=<linode region> --linode-label=<linode label>
+docker-volume-linode --linode-token=<token from linode console> --linode-label=<linode label>
 ```
 
 ### Debugging
@@ -135,7 +132,7 @@ docker plugin set docker-volume-linode LOG_LEVEL=debug
 #### Enable Debug Level in manual installation
 
 ```sh
-docker-volume-linode --linode-token=<...> --linode-region=<...> --linode-label=<...> --log-level=debug
+docker-volume-linode --linode-token=<...> --linode-label=<...> --log-level=debug
 ```
 
 ## Development
