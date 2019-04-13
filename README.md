@@ -54,6 +54,8 @@ $ docker volume create -d linode my-test-volume
 my-test-volume
 ```
 
+If a named volume already exists on the Linode account and it is in the same region of the Linode, it will be reattached if possible.  A Linode Volume can be attached to a single Linode at a time.
+
 #### Create Options
 
 The driver offers [driver specific volume create options](https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options):
@@ -61,7 +63,7 @@ The driver offers [driver specific volume create options](https://docs.docker.co
 | Option | Type | Default | Description |
 | ---    | ---  | ---     | ---         |
 | `size` | int  | `10`    | the size (in GB) of the volume to be created.  Volumes must be at least 10GB in size, so the default is 10GB.
-| `filesystem` | string | `ext4` | the filesystem argument for `mkfs` when formating the new (raw) volume
+| `filesystem` | string | `ext4` | the filesystem argument for `mkfs` when formating the new (raw) volume (xfs, btrfs, ext4)
 | `delete-on-remove` | bool | `false`| if the Linode volume should be deleted when removed
 
 ```sh
@@ -74,6 +76,13 @@ Volumes can also be created and attached from `docker run`:
 ```sh
 docker run -it --rm --mount volume-driver=linode,source=test-vol,destination=/test,volume-opt=size=25 alpine
 ```
+
+Multiple create options can be supplied:
+
+```sh
+docker run -it --rm --mount volume-driver=linode,source=test-vol,destination=/test,volume-opt=size=25,volume-opt=filesystem=btrfs,volume-opt=delete-on-remove=true alpine
+```
+
 
 ### List Volumes
 
