@@ -262,7 +262,7 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 	// else... linode already attached to current host
 
 	// wait for kernel to have block device available
-	if err := waitForDeviceFileExists(linVol.FilesystemPath, 180); err != nil {
+	if err := waitForDeviceFileExists(linVol.FilesystemPath, 300); err != nil {
 		return nil, err
 	}
 
@@ -376,7 +376,7 @@ func attachAndWait(api *linodego.Client, volumeID int, linodeID int) error {
 		return fmt.Errorf("Error attaching volume(%d) to linode(%d): %s", volumeID, linodeID, err)
 	}
 
-	if _, err := api.WaitForVolumeLinodeID(context.Background(), volumeID, &linodeID, 180); err != nil {
+	if _, err := api.WaitForVolumeLinodeID(context.Background(), volumeID, &linodeID, 300); err != nil {
 		return fmt.Errorf("Error waiting for attachment of volume(%d) to linode(%d): %s", volumeID, linodeID, err)
 	}
 	return nil
