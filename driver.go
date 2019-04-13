@@ -30,6 +30,9 @@ type linodeVolumeDriver struct {
 	linodeAPIPtr *linodego.Client
 }
 
+const (
+	fsTagPrefix = "docker-volume-filesystem-"
+)
 
 // Constructor
 func newLinodeVolumeDriver(linodeLabel string, linodeToken string) linodeVolumeDriver {
@@ -191,6 +194,20 @@ func (driver *linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 		Size:     size,
 	}
 
+	if fsOpt, ok := req.Options["filesystem"]; ok {
+		createOpts.Tags = append(createOpts.Tags, fsTagPrefix+fsOpt)
+	}
+
+	if deleteOpt, ok := req.Options["delete-on-remove"]; ok {
+		b, err := strconv.ParseBool(deleteOpt)
+		if err != nil {
+			return fmt.Errorf("Invalid delete-on-remove argument")
+		}
+		if b {
+			createOpts.Tags = append(createOpts.Tags, "docker-volume-delete-on-remove")
+		}
+	}
+
 	if _, err := api.CreateVolume(context.Background(), createOpts); err != nil {
 		return fmt.Errorf("Create(%s) Failed: %s", req.Name, err)
 	}
@@ -221,10 +238,16 @@ func (driver *linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
 		return err
 	}
 
-	// Send Delete request
-	if err := api.DeleteVolume(context.Background(), linVol.ID); err != nil {
-		return err
+	// Optionally send Delete request
+	for _, t := range linVol.Tags {
+		if t == "docker-volume-delete-on-remove" {
+			if err := api.DeleteVolume(context.Background(), linVol.ID); err != nil {
+				return err
+			}
+			break
+		}
 	}
+
 	return nil
 }
 
@@ -287,7 +310,14 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 	// Format block device if no FS found
 	if GetFSType(linVol.FilesystemPath) == "" {
 		log.Infof("Formatting device:%s;", linVol.FilesystemPath)
-		if err := Format(linVol.FilesystemPath); err != nil {
+		filesystem := "ext4"
+		for _, tag := range linVol.Tags {
+			if strings.HasPrefix(tag, fsTagPrefix) {
+				filesystem = tag[len(fsTagPrefix):]
+				break
+			}
+		}
+		if err := Format(linVol.FilesystemPath, filesystem); err != nil {
 			return nil, err
 		}
 	}

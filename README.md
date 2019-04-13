@@ -56,7 +56,13 @@ my-test-volume
 
 #### Create Options
 
-This driver offers `size` as [driver specific option](https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options).  The `size` option specifies the size (in GB) of the volume to be created.  Volumes must be at least 10GB in size, so the default is 10GB.
+The driver offers [driver specific volume create options](https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options):
+
+| Option | Type | Default | Description |
+| ---    | ---  | ---     | ---         |
+| `size` | int  | `10`    | the size (in GB) of the volume to be created.  Volumes must be at least 10GB in size, so the default is 10GB.
+| `filesystem` | string | `ext4` | the filesystem argument for `mkfs` when formating the new (raw) volume
+| `delete-on-remove` | bool | `false`| if the Linode volume should be deleted when removed
 
 ```sh
 $ docker volume create -o size=50 -d linode my-test-volume-50
