@@ -38,7 +38,7 @@ docker-login:
 	echo '${DOCKER_PASSWORD}' | docker login -u "${DOCKER_USERNAME}" --password-stdin
 
 build: $(PLUGIN_DIR)
-	# load plugin with versionied tag
+	# load plugin with versioned tag
 	docker plugin rm -f ${PLUGIN_NAME} 2>/dev/null || true
 	docker plugin create ${PLUGIN_NAME} ./$(PLUGIN_DIR)
 	# load plugin with `latest` tag
