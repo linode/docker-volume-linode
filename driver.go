@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/docker/docker/api/types/filters"
@@ -29,15 +30,21 @@ type linodeVolumeDriver struct {
 	linodeAPIPtr *linodego.Client
 }
 
-// Constructor
-func newLinodeVolumeDriver(region string, linodeLabel string, linodeToken string) linodeVolumeDriver {
+const (
+	fsTagPrefix = "docker-volume-filesystem-"
+)
 
+// Constructor
+func newLinodeVolumeDriver(linodeLabel string, linodeToken string) linodeVolumeDriver {
 	driver := linodeVolumeDriver{
 		linodeToken: linodeToken,
-		region:      region,
 		linodeLabel: linodeLabel,
 		mutex:       &sync.Mutex{},
 	}
+	if _, err := driver.linodeAPI(); err != nil {
+		log.Fatalf("Could not initialize Linode API: %s", err)
+	}
+
 	return driver
 }
 
@@ -50,7 +57,20 @@ func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
 		return driver.linodeAPIPtr, nil
 	}
 
-	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *linodeTokenParamPtr})
+	driver.linodeAPIPtr = setupLinodeAPI(*linodeTokenParamPtr)
+
+	if driver.instanceID == 0 {
+		if err := driver.determineLinodeID(); err != nil {
+			driver.linodeAPIPtr = nil
+			return nil, err
+		}
+	}
+
+	return driver.linodeAPIPtr, nil
+}
+
+func setupLinodeAPI(token string) *linodego.Client {
+	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	oauth2Client := &http.Client{
 		Transport: &oauth2.Transport{
 			Source: tokenSource,
@@ -60,14 +80,15 @@ func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
 	api := linodego.NewClient(oauth2Client)
 	ua := fmt.Sprintf("docker-volume-linode/%s linodego/%s", VERSION, linodego.Version)
 	api.SetUserAgent(ua)
+	return &api
+}
 
-	driver.linodeAPIPtr = &api
-
+func (driver *linodeVolumeDriver) determineLinodeID() error {
 	if driver.linodeLabel == "" {
 		var hostnameErr error
 		driver.linodeLabel, hostnameErr = os.Hostname()
 		if hostnameErr != nil {
-			return nil, fmt.Errorf("Could not determine hostname: %s", hostnameErr)
+			return fmt.Errorf("Could not determine hostname: %s", hostnameErr)
 		}
 	}
 
@@ -76,17 +97,16 @@ func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
 	linodes, lErr := driver.linodeAPIPtr.ListInstances(context.Background(), listOpts)
 
 	if lErr != nil {
-		return nil, fmt.Errorf("Could not determine Linode instance ID from Linode label %s due to error: %s", driver.linodeLabel, lErr)
+		return fmt.Errorf("Could not determine Linode instance ID from Linode label %s due to error: %s", driver.linodeLabel, lErr)
 	} else if len(linodes) != 1 {
-		return nil, fmt.Errorf("Could not determine Linode instance ID from Linode label %s", driver.linodeLabel)
+		return fmt.Errorf("Could not determine Linode instance ID from Linode label %s", driver.linodeLabel)
 	}
 
 	driver.instanceID = linodes[0].ID
 	if driver.region == "" {
 		driver.region = linodes[0].Region
 	}
-
-	return driver.linodeAPIPtr, nil
+	return nil
 }
 
 // Get implementation
@@ -159,6 +179,7 @@ func (driver *linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 	defer driver.mutex.Unlock()
 
 	var size int
+
 	if sizeOpt, ok := req.Options["size"]; ok {
 		s, err := strconv.Atoi(sizeOpt)
 		if err != nil {
@@ -171,6 +192,20 @@ func (driver *linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 		Label:    req.Name,
 		LinodeID: driver.instanceID,
 		Size:     size,
+	}
+
+	if fsOpt, ok := req.Options["filesystem"]; ok {
+		createOpts.Tags = append(createOpts.Tags, fsTagPrefix+fsOpt)
+	}
+
+	if deleteOpt, ok := req.Options["delete-on-remove"]; ok {
+		b, err := strconv.ParseBool(deleteOpt)
+		if err != nil {
+			return fmt.Errorf("Invalid delete-on-remove argument")
+		}
+		if b {
+			createOpts.Tags = append(createOpts.Tags, "docker-volume-delete-on-remove")
+		}
 	}
 
 	if _, err := api.CreateVolume(context.Background(), createOpts); err != nil {
@@ -203,10 +238,16 @@ func (driver *linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
 		return err
 	}
 
-	// Send Delete request
-	if err := api.DeleteVolume(context.Background(), linVol.ID); err != nil {
-		return err
+	// Optionally send Delete request
+	for _, t := range linVol.Tags {
+		if t == "docker-volume-delete-on-remove" {
+			if err := api.DeleteVolume(context.Background(), linVol.ID); err != nil {
+				return err
+			}
+			break
+		}
 	}
+
 	return nil
 }
 
@@ -262,14 +303,21 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 	// else... linode already attached to current host
 
 	// wait for kernel to have block device available
-	if err := waitForDeviceFileExists(linVol.FilesystemPath, 180); err != nil {
+	if err := waitForDeviceFileExists(linVol.FilesystemPath, 300); err != nil {
 		return nil, err
 	}
 
 	// Format block device if no FS found
 	if GetFSType(linVol.FilesystemPath) == "" {
 		log.Infof("Formatting device:%s;", linVol.FilesystemPath)
-		if err := Format(linVol.FilesystemPath); err != nil {
+		filesystem := "ext4"
+		for _, tag := range linVol.Tags {
+			if strings.HasPrefix(tag, fsTagPrefix) {
+				filesystem = tag[len(fsTagPrefix):]
+				break
+			}
+		}
+		if err := Format(linVol.FilesystemPath, filesystem); err != nil {
 			return nil, err
 		}
 	}
@@ -376,7 +424,7 @@ func attachAndWait(api *linodego.Client, volumeID int, linodeID int) error {
 		return fmt.Errorf("Error attaching volume(%d) to linode(%d): %s", volumeID, linodeID, err)
 	}
 
-	if _, err := api.WaitForVolumeLinodeID(context.Background(), volumeID, &linodeID, 180); err != nil {
+	if _, err := api.WaitForVolumeLinodeID(context.Background(), volumeID, &linodeID, 300); err != nil {
 		return fmt.Errorf("Error waiting for attachment of volume(%d) to linode(%d): %s", volumeID, linodeID, err)
 	}
 	return nil

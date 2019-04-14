@@ -28,15 +28,13 @@ var (
 	socketAddressParamPtr = cfgString("socket-file", DefaultSocketAddress, "Sets the socket file/address.")
 	mountRootParamPtr     = cfgString("mount-root", MountRoot, "Sets the root directory for volume mounts.")
 	linodeTokenParamPtr   = cfgString("linode-token", "", "Required Personal Access Token generated in Linode Console.")
-	linodeRegionParamPtr  = cfgString("linode-region", "", "Required linode region.")
-	linodeLabelParamPtr   = cfgString("linode-label", "", "Sets the Linode instance label.")
-	logLevelPtr           = cfgString("log-level", "info", "Sets log level debug,info,warn,error")
+	linodeLabelParamPtr   = cfgString("linode-label", "", "Sets the Linode Instance Label (defaults to the OS HOSTNAME)")
+	logLevelPtr           = cfgString("log-level", "info", "Sets log level: debug,info,warn,error")
 )
 
 func main() {
 	//
 	flag.Parse()
-
 	//
 	log.SetOutput(os.Stdout)
 	level, err := log.ParseLevel(*logLevelPtr)
@@ -49,26 +47,16 @@ func main() {
 
 	// check required parameters (token, region and label)
 	if *linodeTokenParamPtr == "" {
-		log.Error("linode-token is required.")
-	}
-
-	if *linodeRegionParamPtr == "" {
-		log.Error("linode-region is required.")
-	}
-
-	if *linodeLabelParamPtr == "" {
-		log.Error("linode-label is required.")
+		log.Fatal("linode-token is required.")
 	}
 
 	MountRoot = *mountRootParamPtr
 
-	//
 	log.Debugf("linode-token: %s", *linodeTokenParamPtr)
-	log.Debugf("linode-region: %s", *linodeRegionParamPtr)
 	log.Debugf("linode-label: %s", *linodeLabelParamPtr)
 
 	// Driver instance
-	driver := newLinodeVolumeDriver(*linodeRegionParamPtr, *linodeLabelParamPtr, *linodeTokenParamPtr)
+	driver := newLinodeVolumeDriver(*linodeLabelParamPtr, *linodeTokenParamPtr)
 
 	// Attach Driver to docker
 	handler := volume.NewHandler(&driver)

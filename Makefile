@@ -10,7 +10,6 @@ DOCKER_PASSWORD ?= xxxxx
 
 # Test Arguments
 TEST_TOKEN ?= xyz
-TEST_REGION ?= xyz
 TEST_LABEL ?= xyz
 
 GOPATH=$(shell go env GOPATH)
@@ -82,16 +81,15 @@ test-use-volume:
 	docker run --rm -i -v test-volume-default-size:/mnt busybox test -f /mnt/abc.txt || false
 
 test-pre-check:
-	@if [ "${TEST_TOKEN}" = "xyz" ] || [ "${TEST_REGION}" = "xyz" ] || [ "${TEST_LABEL}" = "xyz" ] ; then \
+	@if [ "${TEST_TOKEN}" = "xyz" ] || [ "${TEST_LABEL}" = "xyz" ] ; then \
 		echo -en "#############################\nYou must set TEST_* Variables\n#############################\n"; exit 1; fi
 
 test-setup:
-	@docker plugin set $(PLUGIN_NAME) LINODE_TOKEN=${TEST_TOKEN} LINODE_REGION=${TEST_REGION} LINODE_LABEL=${TEST_LABEL}
-	docker plugin enable  $(PLUGIN_NAME)
+	@docker plugin set $(PLUGIN_NAME) LINODE_TOKEN=${TEST_TOKEN} LINODE_LABEL=${TEST_LABEL}
+	docker plugin enable $(PLUGIN_NAME)
 
 check:
 	# Tools
-	
 	GO111MODULE=off go get -u github.com/tsenart/deadcode
 	GO111MODULE=off go get -u github.com/kisielk/errcheck
 	GO111MODULE=off go get -u golang.org/x/lint/golint

@@ -8,13 +8,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	formatFSType = "ext4"
-)
-
 // Format calls mke2fs on path
-func Format(path string) error {
-	cmd := exec.Command("mke2fs", "-t", formatFSType, path)
+func Format(path string, formatFSType string) error {
+	cmd := exec.Command("mkfs", "-t", formatFSType, path)
 	stdOutAndErr, err := cmd.CombinedOutput()
 	log.Debugf("Mke2fs Output:\n%s", stdOutAndErr)
 	return err

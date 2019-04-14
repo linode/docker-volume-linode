@@ -28,16 +28,14 @@ The plugin can also be configured (or reconfigured) in multiple steps.
 docker plugin install --alias linode linode/docker-volume-linode
 docker plugin disable linode
 docker plugin set linode linode-token=<linode token>
-docker plugin set linode linode-region=<linode region>
 docker plugin set linode linode-label=<linode label>
 docker plugin enable linode
 ```
 
 - \<linode token\>: You will need a Linode APIv4 Personal Access Token.  Get one here: <https://developers.linode.com/api/v4#section/Personal-Access-Token>.  The API Token must have Read/Write permission for Volumes and Linodes.
-- \<linode regions\>: `us-east`, `us-central`, `us-west`, `eu-west`, `eu-central`, `ap-south`, `ap-northeast`.  [Some Linode regions do not have Block Storage Volume support](https://www.linode.com/community/questions/344/when-will-block-storage-be-available-in-my-datacenter), such as: `us-southeast` and `ap-northeast-1a`.
-- \<linode label\>: The label given to the host Linode Control Panel.
-- For a complete list of regions:  https://api.linode.com/v4/regions
-- For all options see "Driver Options" section
+- \<linode label\>: The label given to the host Linode Control Panel. Defaults to the system hostname.
+  [Some Linode regions do not have Block Storage Volume support](https://www.linode.com/community/questions/344/when-will-block-storage-be-available-in-my-datacenter), such as: `us-southeast` and `ap-northeast-1a`.  For a complete list of regions:  https://api.linode.com/v4/regions
+- For all options see [Driver Options](#Driver-Options) section
 
 ### Docker Swarm
 
@@ -56,9 +54,17 @@ $ docker volume create -d linode my-test-volume
 my-test-volume
 ```
 
+If a named volume already exists on the Linode account and it is in the same region of the Linode, it will be reattached if possible.  A Linode Volume can be attached to a single Linode at a time.
+
 #### Create Options
 
-This driver offers `size` as [driver specific option](https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options).  The `size` option specifies the size (in GB) of the volume to be created.  Volumes must be at least 10GB in size, so the default is 10GB.
+The driver offers [driver specific volume create options](https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options):
+
+| Option | Type | Default | Description |
+| ---    | ---  | ---     | ---         |
+| `size` | int  | `10`    | the size (in GB) of the volume to be created.  Volumes must be at least 10GB in size, so the default is 10GB.
+| `filesystem` | string | `ext4` | the filesystem argument for `mkfs` when formating the new (raw) volume (xfs, btrfs, ext4)
+| `delete-on-remove` | bool | `false`| if the Linode volume should be deleted when removed
 
 ```sh
 $ docker volume create -o size=50 -d linode my-test-volume-50
@@ -70,6 +76,13 @@ Volumes can also be created and attached from `docker run`:
 ```sh
 docker run -it --rm --mount volume-driver=linode,source=test-vol,destination=/test,volume-opt=size=25 alpine
 ```
+
+Multiple create options can be supplied:
+
+```sh
+docker run -it --rm --mount volume-driver=linode,source=test-vol,destination=/test,volume-opt=size=25,volume-opt=filesystem=btrfs,volume-opt=delete-on-remove=true alpine
+```
+
 
 ### List Volumes
 
@@ -103,7 +116,6 @@ my-test-volume-50
 | --- | --- |
 | linode-token | **Required** The Linode APIv4 [Personal Access Token](https://cloud.linode.com/profile/tokens)
 | linode-label | The Linode Label to attach block storage volumes to (defaults to the system hostname) |
-| linode-region | The Linode region to create volumes in (inferred if using linode-label, defaults to us-west) |
 | socket-file | Sets the socket file/address (defaults to /run/docker/plugins/linode.sock) |
 | socket-gid | Sets the socket GID (defaults to 0) |
 | mount-root | Sets the root directory for volume mounts (default /mnt) |
@@ -119,7 +131,7 @@ Options can be set once for all future uses with [`docker plugin set`](https://d
 ### Run the driver
 
 ```sh
-docker-volume-linode --linode-token=<token from linode console> --linode-region=<linode region> --linode-label=<linode label>
+docker-volume-linode --linode-token=<token from linode console> --linode-label=<linode label>
 ```
 
 ### Debugging
@@ -135,7 +147,7 @@ docker plugin set docker-volume-linode LOG_LEVEL=debug
 #### Enable Debug Level in manual installation
 
 ```sh
-docker-volume-linode --linode-token=<...> --linode-region=<...> --linode-label=<...> --log-level=debug
+docker-volume-linode --linode-token=<...> --linode-label=<...> --log-level=debug
 ```
 
 ## Development
