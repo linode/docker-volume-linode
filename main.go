@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -58,7 +57,7 @@ func main() {
 	log.Debugf("linode-label: %s", *linodeLabelParamPtr)
 
 	//
-	docker, err := client.NewClient(fmt.Sprintf("unix://%s", *socketAddressParamPtr), "v1.18", nil, map[string]string{"User-Agent": "linode-volume-driver"})
+	docker, err := client.NewEnvClient()
 	if err != nil {
 		panic(err)
 	}
