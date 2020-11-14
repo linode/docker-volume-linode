@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -60,7 +62,7 @@ func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
 	driver.linodeAPIPtr = setupLinodeAPI(*linodeTokenParamPtr)
 
 	if driver.instanceID == 0 {
-		if err := driver.determineLinodeID(); err != nil {
+		if err := driver.determineLinodeIdFromIpAddress(); err != nil {
 			driver.linodeAPIPtr = nil
 			return nil, err
 		}
@@ -83,29 +85,37 @@ func setupLinodeAPI(token string) *linodego.Client {
 	return &api
 }
 
-func (driver *linodeVolumeDriver) determineLinodeID() error {
-	if driver.linodeLabel == "" {
-		var hostnameErr error
-		driver.linodeLabel, hostnameErr = os.Hostname()
-		if hostnameErr != nil {
-			return fmt.Errorf("Could not determine hostname: %s", hostnameErr)
+func getLinodeIpAddress() (string, error) {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "", err
+	}
+
+	for _, a := range addrs {
+		if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			return ipnet.IP.String(), nil
 		}
 	}
 
-	jsonFilter, _ := json.Marshal(map[string]string{"label": driver.linodeLabel})
-	listOpts := linodego.NewListOptions(0, string(jsonFilter))
-	linodes, lErr := driver.linodeAPIPtr.ListInstances(context.Background(), listOpts)
+	return "", errors.New("unable to determine Linode's IP Address")
+}
 
-	if lErr != nil {
-		return fmt.Errorf("Could not determine Linode instance ID from Linode label %s due to error: %s", driver.linodeLabel, lErr)
-	} else if len(linodes) != 1 {
-		return fmt.Errorf("Could not determine Linode instance ID from Linode label %s", driver.linodeLabel)
+func (driver *linodeVolumeDriver) determineLinodeIdFromIpAddress() error {
+	localAddr, err := getLinodeIpAddress()
+	if err != nil {
+		return err
 	}
 
-	driver.instanceID = linodes[0].ID
+	instanceIp, err := driver.linodeAPIPtr.GetIPAddress(context.Background(), localAddr)
+	if err != nil {
+		return fmt.Errorf("Could not determine Linode instance ID from IP Address %s", localAddr)
+	}
+
+	driver.instanceID = instanceIp.LinodeID
 	if driver.region == "" {
-		driver.region = linodes[0].Region
+		driver.region = instanceIp.Region
 	}
+
 	return nil
 }
 
