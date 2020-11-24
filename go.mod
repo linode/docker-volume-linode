@@ -1,5 +1,7 @@
 module github.com/linode/docker-volume-linode
 
+go 1.15
+
 require (
 	github.com/Microsoft/go-winio v0.4.11 // indirect
 	github.com/coreos/go-systemd v0.0.0-20180511133405-39ca1b05acc7 // indirect

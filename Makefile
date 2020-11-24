@@ -85,7 +85,7 @@ test-pre-check:
 		echo -en "#############################\nYou must set TEST_* Variables\n#############################\n"; exit 1; fi
 
 test-setup:
-	@docker plugin set $(PLUGIN_NAME) LINODE_TOKEN=${TEST_TOKEN} LINODE_LABEL=${TEST_LABEL}
+	@docker plugin set $(PLUGIN_NAME) linode-token=${TEST_TOKEN} linode-label=${TEST_LABEL}
 	docker plugin enable $(PLUGIN_NAME)
 
 check:
