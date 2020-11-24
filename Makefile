@@ -89,15 +89,7 @@ test-setup:
 	docker plugin enable $(PLUGIN_NAME)
 
 check:
-	# Tools
-	GO111MODULE=off go get -u github.com/tsenart/deadcode
-	GO111MODULE=off go get -u github.com/kisielk/errcheck
-	GO111MODULE=off go get -u golang.org/x/lint/golint
-	# Run Code Tests
-	GOOS=linux go vet
-	errcheck
-	golint
-	deadcode
+	docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.32.2 golangci-lint run -v
 
 unit-test:
 	GOOS=linux go test
