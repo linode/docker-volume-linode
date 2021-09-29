@@ -42,6 +42,7 @@ build: $(PLUGIN_DIR)
 	docker plugin rm -f ${PLUGIN_NAME} 2>/dev/null || true
 	docker plugin create ${PLUGIN_NAME} ./$(PLUGIN_DIR)
 	# load plugin with `latest` tag
+	docker plugin rm -f ${PLUGIN_NAME} 2>/dev/null || true
 	docker plugin rm -f ${PLUGIN_NAME_LATEST} 2>/dev/null || true
 	docker plugin create ${PLUGIN_NAME_LATEST} ./$(PLUGIN_DIR)
 
