@@ -1,6 +1,6 @@
 # Docker Volume Driver For Linode
 
-[![Build](/../../workflows/pull_request.yml/badge.svg)](/../../workflows/pull_request.yml)
+[![Build](/../../actions/workflows/pull_request.yml/badge.svg)](/../../actions/workflows/pull_request.yml)
 
 This [volume plugin](https://docs.docker.com/engine/extend/plugins_volume/) adds the ability to manage [Linode Block Storage](https://www.linode.com/blockstorage) as [Docker Volumes](https://docs.docker.com/storage/volumes/).
 [Good use cases for volumes](https://docs.docker.com/storage/#good-use-cases-for-volumes) include off-node storage to avoid size constraints or moving a container and the related volume between nodes in a [Swarm](https://github.com/linode/docker-machine-driver-linode#provisioning-docker-swarm).
