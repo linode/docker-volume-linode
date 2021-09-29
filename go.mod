@@ -17,7 +17,6 @@ require (
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/sirupsen/logrus v1.1.1
 	golang.org/x/crypto v0.0.0-20181001203147-e3636079e1a4 // indirect
-	golang.org/x/net v0.0.0-20181220203305-927f97764cc3
 	golang.org/x/oauth2 v0.0.0-20181003184128-c57b0facaced
 	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 // indirect
 	golang.org/x/sys v0.0.0-20181005133103-4497e2df6f9e // indirect
