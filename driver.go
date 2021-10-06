@@ -4,18 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/docker/docker/api/types/filters"
-
 	"golang.org/x/oauth2"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/client"
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/linode/linodego"
 	log "github.com/sirupsen/logrus"
@@ -265,42 +264,49 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 		return nil, err
 	}
 
-	// if volume not attached, attach to this linode
-	if linVol.LinodeID == nil {
-		if err := attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
-			return nil, fmt.Errorf("Error attaching volume(%s) to linode: %s", req.Name, err)
-		}
-	} else if *linVol.LinodeID != driver.instanceID { // If volume attached to another linode... send detach request
+	// Detach if attached
+	if linVol.LinodeID != nil && *linVol.LinodeID != driver.instanceID {
 		cli, err := client.NewEnvClient()
 		if err != nil {
 			panic(err)
 		}
 
-		filters := filters.Args{}
-		filters.Add("volume", req.Name)
+		f := filters.NewArgs()
+		f.Add("volume", req.Name)
 		listOpts := types.ContainerListOptions{
-			Filters: filters,
+			Filters: f,
 		}
 
 		containers, err := cli.ContainerList(context.Background(), listOpts)
 		if err != nil {
-			return nil, fmt.Errorf("Error detecting containers using volume from remote linode: %s", err)
+			return nil, fmt.Errorf("error detecting containers using volume from remote linode: %s", err)
 		}
 
 		if len(containers) > 0 {
-			return nil, fmt.Errorf("Error detaching volume from remote linode: volume in use by %s", containers[0].ID)
+			return nil, fmt.Errorf("error detaching volume from remote linode: volume in use by %s", containers[0].ID)
 		}
 
 		if err := detachAndWait(api, linVol.ID); err != nil {
-			return nil, fmt.Errorf("Error detaching volume from remote linode: %s", err)
+			return nil, err
 		}
-
-		if err := attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
-			return nil, fmt.Errorf("Error attaching volume(%s) to linode: %s", req.Name, err)
-		}
-
 	}
-	// else... linode already attached to current host
+
+	linVol, err = api.GetVolume(context.Background(), linVol.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure volume was successfully detached or is already attached to the current Linode
+	if linVol.LinodeID != nil && *linVol.LinodeID != driver.instanceID {
+		return nil, fmt.Errorf("failed to detach volume from linode %v", *linVol.LinodeID)
+	}
+
+	// Attach if not already attached
+	if linVol.LinodeID == nil {
+		if err := attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
+			return nil, fmt.Errorf("error attaching volume(%s) to linode: %s", req.Name, err)
+		}
+	}
 
 	// wait for kernel to have block device available
 	if err := waitForDeviceFileExists(linVol.FilesystemPath, 300); err != nil {
@@ -367,6 +373,7 @@ func (driver *linodeVolumeDriver) Unmount(req *volume.UnmountRequest) error {
 	}
 
 	log.Infof("Unmount(): %s", req.Name)
+
 	return nil
 }
 

@@ -40,11 +40,7 @@ func waitForLinodeVolumeDetachment(linodeAPI linodego.Client, volumeID int) erro
 			return false
 		}
 
-		if v.LinodeID == nil {
-			return true // detached
-		}
-
-		return false
+		return v.LinodeID == nil
 	})
 }
 
