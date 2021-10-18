@@ -1,6 +1,6 @@
 module github.com/linode/docker-volume-linode
 
-go 1.15
+go 1.17
 
 require (
 	github.com/Microsoft/go-winio v0.4.11 // indirect
@@ -20,4 +20,13 @@ require (
 	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 // indirect
 	gopkg.in/resty.v1 v1.11.0 // indirect
 	gopkg.in/yaml.v2 v2.2.2 // indirect
+)
+
+require (
+	github.com/go-resty/resty/v2 v2.1.1-0.20191201195748-d7b97669fe48 // indirect
+	github.com/golang/protobuf v1.2.0 // indirect
+	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2 // indirect
+	golang.org/x/net v0.0.0-20190628185345-da137c7871d7 // indirect
+	golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a // indirect
+	google.golang.org/appengine v1.4.0 // indirect
 )
