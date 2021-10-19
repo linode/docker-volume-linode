@@ -4,15 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
 	"net/http"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
 
 	"golang.org/x/oauth2"
 
@@ -40,6 +41,7 @@ func newLinodeVolumeDriver(linodeLabel, linodeToken, mountRoot string) linodeVol
 	driver := linodeVolumeDriver{
 		linodeToken: linodeToken,
 		linodeLabel: linodeLabel,
+		mountRoot:   mountRoot,
 		mutex:       &sync.Mutex{},
 	}
 	if _, err := driver.linodeAPI(); err != nil {
