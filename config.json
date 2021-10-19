@@ -3,9 +3,11 @@
   "documentation": "https://docs.docker.com/engine/extend/plugins/",
   "entrypoint": [ "/docker-volume-linode" ],
   "env": [
-    { "name": "log-level",  "settable": [ "value" ], "value": "info" },
+    { "name": "linode-token",  "settable": [ "value" ], "value": "" },
     { "name": "linode-label",   "settable": [ "value" ], "value": "" },
-    { "name": "linode-token",  "settable": [ "value" ], "value": "" }
+    { "name": "socket-user",  "settable": [ "value" ], "value": "root" },
+    { "name": "mount-root",  "settable": [ "value" ], "value": "/mnt" },
+    { "name": "log-level",  "settable": [ "value" ], "value": "info" }
   ],
   "interface": {
     "socket": "linode.sock",
