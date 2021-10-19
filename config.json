@@ -3,12 +3,10 @@
   "documentation": "https://docs.docker.com/engine/extend/plugins/",
   "entrypoint": [ "/docker-volume-linode" ],
   "env": [
-    { "name": "socket-file",  "settable": [ "value" ], "value": "/run/docker/plugins/linode.sock" },
-    { "name": "socket-gid",  "settable": [ "value" ], "value": "0" },
-    { "name": "mount-root",  "settable": [ "value" ], "value": "/mnt" },
     { "name": "linode-token",  "settable": [ "value" ], "value": "" },
-    { "name": "linode-region", "settable": [ "value" ], "value": "" },
     { "name": "linode-label",   "settable": [ "value" ], "value": "" },
+    { "name": "socket-user",  "settable": [ "value" ], "value": "root" },
+    { "name": "mount-root",  "settable": [ "value" ], "value": "/mnt" },
     { "name": "log-level",  "settable": [ "value" ], "value": "info" }
   ],
   "interface": {
