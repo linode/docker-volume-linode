@@ -5,18 +5,12 @@ import (
 	"errors"
 	"math"
 	"os"
-	"path"
 	"time"
 
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/linode/linodego"
 	log "github.com/sirupsen/logrus"
 )
-
-// labelToMountPoint gets the mount-point for a volume
-func labelToMountPoint(volumeLabel string) string {
-	return path.Join(MountRoot, volumeLabel)
-}
 
 // waitForDeviceFileExists waits until path devicePath becomes available or
 // times out.
@@ -62,10 +56,10 @@ func waitForCondition(waitSeconds int, intervalSeconds int, check func() bool) e
 }
 
 // linodeVolumeToDockerVolume converts a linode volume to a docker volume
-func linodeVolumeToDockerVolume(lv linodego.Volume) *volume.Volume {
+func linodeVolumeToDockerVolume(lv linodego.Volume, mp string) *volume.Volume {
 	v := &volume.Volume{
 		Name:       lv.Label,
-		Mountpoint: labelToMountPoint(lv.Label),
+		Mountpoint: mp,
 		CreatedAt:  lv.Created.Format(time.RFC3339),
 		Status:     make(map[string]interface{}),
 	}

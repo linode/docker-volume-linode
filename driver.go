@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"sync"
@@ -26,6 +27,7 @@ type linodeVolumeDriver struct {
 	region       string
 	linodeLabel  string
 	linodeToken  string
+	mountRoot    string
 	mutex        *sync.Mutex
 	linodeAPIPtr *linodego.Client
 }
@@ -35,7 +37,7 @@ const (
 )
 
 // Constructor
-func newLinodeVolumeDriver(linodeLabel string, linodeToken string) linodeVolumeDriver {
+func newLinodeVolumeDriver(linodeLabel, linodeToken, mountRoot string) linodeVolumeDriver {
 	driver := linodeVolumeDriver{
 		linodeToken: linodeToken,
 		linodeLabel: linodeLabel,
@@ -57,7 +59,7 @@ func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
 		return driver.linodeAPIPtr, nil
 	}
 
-	driver.linodeAPIPtr = setupLinodeAPI(*linodeTokenParamPtr)
+	driver.linodeAPIPtr = setupLinodeAPI(driver.linodeToken)
 
 	if driver.instanceID == 0 {
 		if err := driver.determineLinodeID(); err != nil {
@@ -121,7 +123,8 @@ func (driver *linodeVolumeDriver) Get(req *volume.GetRequest) (*volume.GetRespon
 		return nil, fmt.Errorf("got a NIL volume. Volume may not exist")
 	}
 
-	vol := linodeVolumeToDockerVolume(*linVol)
+	mp := driver.labelToMountPoint(linVol.Label)
+	vol := linodeVolumeToDockerVolume(*linVol, mp)
 	resp := &volume.GetResponse{Volume: vol}
 
 	log.Infof("Get(): {Name: %s; Mountpoint: %s;}", vol.Name, vol.Mountpoint)
@@ -158,7 +161,8 @@ func (driver *linodeVolumeDriver) List() (*volume.ListResponse, error) {
 	}
 	log.Debugf("Got %d volume count from api", len(linVols))
 	for _, linVol := range linVols {
-		vol := linodeVolumeToDockerVolume(linVol)
+		mp := driver.labelToMountPoint(linVol.Label)
+		vol := linodeVolumeToDockerVolume(linVol, mp)
 		log.Debugf("Volume: %+v", vol)
 		volumes = append(volumes, vol)
 	}
@@ -323,7 +327,7 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 	}
 
 	// Create mount point using label (if not exists)
-	mp := labelToMountPoint(linVol.Label)
+	mp := driver.labelToMountPoint(linVol.Label)
 	if _, err := os.Stat(mp); os.IsNotExist(err) {
 		log.Infof("Creating mountpoint directory: %s", mp)
 		if err = os.MkdirAll(mp, 0755); err != nil {
@@ -348,7 +352,7 @@ func (driver *linodeVolumeDriver) Path(req *volume.PathRequest) (*volume.PathRes
 		return nil, err
 	}
 
-	mp := labelToMountPoint(linVol.Label)
+	mp := driver.labelToMountPoint(linVol.Label)
 	log.Infof("Path(): %s", mp)
 	return &volume.PathResponse{Mountpoint: mp}, nil
 }
@@ -362,7 +366,7 @@ func (driver *linodeVolumeDriver) Unmount(req *volume.UnmountRequest) error {
 		return err
 	}
 
-	if err := Umount(labelToMountPoint(linVol.Label)); err != nil {
+	if err := Umount(driver.labelToMountPoint(linVol.Label)); err != nil {
 		return fmt.Errorf("Unable to Unmount(%s): %s", req.Name, err)
 	}
 
@@ -374,6 +378,11 @@ func (driver *linodeVolumeDriver) Unmount(req *volume.UnmountRequest) error {
 func (driver *linodeVolumeDriver) Capabilities() *volume.CapabilitiesResponse {
 	log.Infof("Capabilities(): Scope: global")
 	return &volume.CapabilitiesResponse{Capabilities: volume.Capability{Scope: "global"}}
+}
+
+// labelToMountPoint gets the mount-point for a volume
+func (driver *linodeVolumeDriver) labelToMountPoint(volumeLabel string) string {
+	return path.Join(driver.mountRoot, volumeLabel)
 }
 
 // findVolumeByLabel looks up linode volume by label
