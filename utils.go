@@ -25,20 +25,16 @@ func waitForDeviceFileExists(devicePath string, waitSeconds int) error {
 	})
 }
 
-func waitForLinodeVolumeDetachment(linodeAPI linodego.Client, volumeID int) error {
+func waitForLinodeVolumeDetachment(linodeAPI linodego.Client, volumeID, timeout int) error {
 	// Wait for linode to have the volume detached
-	return waitForCondition(180, 2, func() bool {
+	return waitForCondition(timeout, 2, func() bool {
 		v, err := linodeAPI.GetVolume(context.Background(), volumeID)
 		if err != nil {
 			log.Error(err)
 			return false
 		}
 
-		if v.LinodeID == nil {
-			return true // detached
-		}
-
-		return false
+		return v.LinodeID == nil
 	})
 }
 

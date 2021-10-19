@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
 	"net/http"
 	"os"
 	"path"
@@ -11,12 +14,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/docker/docker/api/types/filters"
-
 	"golang.org/x/oauth2"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/client"
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/linode/linodego"
 	log "github.com/sirupsen/logrus"
@@ -269,42 +268,20 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 		return nil, err
 	}
 
-	// if volume not attached, attach to this linode
-	if linVol.LinodeID == nil {
-		if err := attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
-			return nil, fmt.Errorf("Error attaching volume(%s) to linode: %s", req.Name, err)
-		}
-	} else if *linVol.LinodeID != driver.instanceID { // If volume attached to another linode... send detach request
-		cli, err := client.NewEnvClient()
-		if err != nil {
-			panic(err)
-		}
-
-		filters := filters.Args{}
-		filters.Add("volume", req.Name)
-		listOpts := types.ContainerListOptions{
-			Filters: filters,
-		}
-
-		containers, err := cli.ContainerList(context.Background(), listOpts)
-		if err != nil {
-			return nil, fmt.Errorf("Error detecting containers using volume from remote linode: %s", err)
-		}
-
-		if len(containers) > 0 {
-			return nil, fmt.Errorf("Error detaching volume from remote linode: volume in use by %s", containers[0].ID)
-		}
-
-		if err := detachAndWait(api, linVol.ID); err != nil {
-			return nil, fmt.Errorf("Error detaching volume from remote linode: %s", err)
-		}
-
-		if err := attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
-			return nil, fmt.Errorf("Error attaching volume(%s) to linode: %s", req.Name, err)
-		}
-
+	linVol, err = api.GetVolume(context.Background(), linVol.ID)
+	if err != nil {
+		return nil, err
 	}
-	// else... linode already attached to current host
+
+	// Ensure the volume is not currently mounted
+	if err := driver.ensureNotMounted(linVol.ID); err != nil {
+		return nil, fmt.Errorf("failed to attach volume: %s", err)
+	}
+
+	// Attach to current Linode
+	if err := attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
+		return nil, fmt.Errorf("error attaching volume(%s) to linode: %s", req.Name, err)
+	}
 
 	// wait for kernel to have block device available
 	if err := waitForDeviceFileExists(linVol.FilesystemPath, 300); err != nil {
@@ -359,6 +336,11 @@ func (driver *linodeVolumeDriver) Path(req *volume.PathRequest) (*volume.PathRes
 
 // Unmount implementation
 func (driver *linodeVolumeDriver) Unmount(req *volume.UnmountRequest) error {
+	api, err := driver.linodeAPI()
+	if err != nil {
+		return err
+	}
+
 	log.Infof("Unmount(%s)", req.Name)
 
 	linVol, err := driver.findVolumeByLabel(req.Name)
@@ -371,6 +353,14 @@ func (driver *linodeVolumeDriver) Unmount(req *volume.UnmountRequest) error {
 	}
 
 	log.Infof("Unmount(): %s", req.Name)
+
+	// The volume is detached from the Linode at unmount
+	// to allow remote Linodes to infer whether a volume is
+	// mounted
+	if err := detachAndWait(api, linVol.ID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -391,7 +381,6 @@ func (driver *linodeVolumeDriver) findVolumeByLabel(volumeLabel string) (*linode
 	var err error
 	var linVols []linodego.Volume
 
-	//
 	api, err := driver.linodeAPI()
 	if err != nil {
 		return nil, err
@@ -420,7 +409,7 @@ func detachAndWait(api *linodego.Client, volumeID int) error {
 	}
 
 	// Wait for linode to have the volume detached
-	if err := waitForLinodeVolumeDetachment(*api, volumeID); err != nil {
+	if err := waitForLinodeVolumeDetachment(*api, volumeID, 180); err != nil {
 		return fmt.Errorf("Error waiting for detachment of volumeID(%d): %s", volumeID, err)
 	}
 	return nil
@@ -437,4 +426,91 @@ func attachAndWait(api *linodego.Client, volumeID int, linodeID int) error {
 		return fmt.Errorf("Error waiting for attachment of volume(%d) to linode(%d): %s", volumeID, linodeID, err)
 	}
 	return nil
+}
+
+// ensureNotMounted returns an error if the specified volume is in use by a remote Linode
+// or local container
+func (driver *linodeVolumeDriver) ensureNotMounted(volumeID int) error {
+	api, err := driver.linodeAPI()
+	if err != nil {
+		return err
+	}
+
+	vol, err := api.GetVolume(context.Background(), volumeID)
+	if err != nil {
+		return err
+	}
+
+	cli, err := client.NewEnvClient()
+	if err != nil {
+		panic(err)
+	}
+
+	f := filters.NewArgs()
+	f.Add("volume", vol.Label)
+	listOpts := types.ContainerListOptions{
+		Filters: f,
+	}
+
+	containers, err := cli.ContainerList(context.Background(), listOpts)
+	if err != nil {
+		return fmt.Errorf("failed to list containers with specified volume: %v", err)
+	}
+
+	if len(containers) > 0 {
+		return fmt.Errorf("volume in use by %s", containers[0].ID)
+	}
+
+	// We should wait for the volume to be detached if it is in the process of detaching
+	if vol.LinodeID != nil {
+		volDetaching, err := checkVolumeDetaching(api, volumeID)
+		if err != nil {
+			return err
+		}
+
+		if !volDetaching {
+			return fmt.Errorf("volume is currently in use by linode id %d", *vol.LinodeID)
+		}
+
+		if err := waitForLinodeVolumeDetachment(*api, volumeID, 180); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// checkVolumeDetaching checks whether a volume is currently in the process of detaching.
+// This is useful cases where a volume is available but hasn't yet been fully attached
+func checkVolumeDetaching(api *linodego.Client, volumeID int) (bool, error) {
+	filter := linodego.Filter{}
+
+	filter.AddField(linodego.Eq, "entity.id", volumeID)
+	filter.AddField(linodego.Eq, "entity.type", "volume")
+	filter.OrderBy = "created"
+	filter.Order = "desc"
+
+	detachFilterStr, err := filter.MarshalJSON()
+
+	if err != nil {
+		return false, err
+	}
+
+	events, err := api.ListEvents(context.Background(),
+		&linodego.ListOptions{Filter: string(detachFilterStr)})
+	if err != nil {
+		return false, err
+	}
+
+	for _, e := range events {
+		if e.Action == "volume_detach" {
+			return true, nil
+		}
+
+		if e.Action == "volume_attach" {
+			return false, nil
+		}
+	}
+
+	return false, nil
 }
