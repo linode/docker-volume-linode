@@ -16,7 +16,7 @@ var VERSION string
 
 var (
 	mountRoot   = cfgString("mount-root", "/mnt", "the location to mount volumes")
-	socketUser  = cfgString("socket-file", "root", "Sets the socket file/address.")
+	socketUser  = cfgString("socket-user", "root", "Sets the user to create the socket with.")
 	logLevel    = cfgString("log-level", "info", "Sets log level: debug,info,warn,error")
 	linodeToken = cfgString("linode-token", "", "Required Personal Access Token generated in Linode Console.")
 	linodeLabel = cfgString("linode-label", "", "Sets the Linode Instance Label (defaults to the OS HOSTNAME)")

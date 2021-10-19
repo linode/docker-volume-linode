@@ -7,16 +7,26 @@ This [volume plugin](https://docs.docker.com/engine/extend/plugins_volume/) adds
 
 ## Requirements
 
-- Linux (tested on Ubuntu 18.04, should work with other versions and distributions)
-- Docker (tested on version 17, should work with other versions)
+- Linux (tested on Fedora 34, should work with other versions and distributions)
+- Docker (tested on version 20, should work with other versions)
 
 ## Installation
 
-When the system hostname is the Linode label, the only required parameter is the `linode-token`:
-
 ```sh
-docker plugin install --alias linode --grant-all-permissions linode/docker-volume-linode linode-token=<linode token>
+docker plugin install --alias linode --grant-all-permissions linode/docker-volume-linode linode-token=<linode token> linode-label=<linode label>
 ```
+
+### Driver Options
+
+| Option Name | Description |
+| --- | --- |
+| linode-token | **Required** The Linode APIv4 [Personal Access Token](https://cloud.linode.com/profile/tokens)
+| linode-label | **Required** The Linode Label set at creation
+| mount-root | Sets the root directory for volume mounts (default /mnt) |
+| log-level | Sets log level to debug,info,warn,error (defaults to info) |
+| socket-user | Sets the user to create the docker socket with (defaults to root) |
+
+Options can be set once for all future uses with [`docker plugin set`](https://docs.docker.com/engine/reference/commandline/plugin_set/#extended-description).
 
 ### Changing the plugin configuration
 
@@ -30,9 +40,6 @@ docker plugin set linode linode-label=<linode label>
 docker plugin enable linode
 ```
 
-- \<linode token\>: You will need a Linode APIv4 Personal Access Token.  Get one here: <https://developers.linode.com/api/v4#section/Personal-Access-Token>.  The API Token must have Read/Write permission for Volumes and Linodes.
-- \<linode label\>: The label given to the host Linode Control Panel. Defaults to the system hostname.
-  [Some Linode regions do not have Block Storage Volume support](https://www.linode.com/community/questions/344/when-will-block-storage-be-available-in-my-datacenter), such as: `us-southeast` and `ap-northeast-1a`.  For a complete list of regions:  https://api.linode.com/v4/regions
 - For all options see [Driver Options](#Driver-Options) section
 
 ### Docker Swarm
@@ -108,19 +115,6 @@ $ docker volume rm my-test-volume-50
 my-test-volume-50
 ```
 
-### Driver Options
-
-| Option Name | Description |
-| --- | --- |
-| linode-token | **Required** The Linode APIv4 [Personal Access Token](https://cloud.linode.com/profile/tokens)
-| linode-label | The Linode Label to attach block storage volumes to (defaults to the system hostname) |
-| socket-file | Sets the socket file/address (defaults to /run/docker/plugins/linode.sock) |
-| socket-gid | Sets the socket GID (defaults to 0) |
-| mount-root | Sets the root directory for volume mounts (default /mnt) |
-| log-level | Sets log level to debug,info,warn,error (defaults to info) |
-
-Options can be set once for all future uses with [`docker plugin set`](https://docs.docker.com/engine/reference/commandline/plugin_set/#extended-description).
-
 ## Manual Installation
 
 - Install Golang: <https://golang.org/>
@@ -139,7 +133,7 @@ docker-volume-linode --linode-token=<token from linode console> --linode-label=<
 The driver name when running manually is the same name as the socket file.
 
 ```sh
-docker plugin set docker-volume-linode LOG_LEVEL=debug
+docker plugin set docker-volume-linode log-level=debug
 ```
 
 #### Enable Debug Level in manual installation
@@ -150,33 +144,35 @@ docker-volume-linode --linode-token=<...> --linode-label=<...> --log-level=debug
 
 ## Development
 
-A great place to get started is the [Docker Engine managed plugin system] documentation](https://docs.docker.com/engine/extend/#create-a-volumedriver).
+A great place to get started is the Docker Engine managed plugin system [documentation](https://docs.docker.com/engine/extend/#create-a-volumedriver).
 
 ## Tested On
 
 ```text
-Ubuntu 18.04 LTS
+Fedora 34
 ```
 
 ```text
 Tested With:
 Client:
- Version:       17.12.1-ce
- API version:   1.35
- Go version:    go1.10.1
- Git commit:    7390fc6
- Built: Wed Apr 18 01:23:11 2018
- OS/Arch:       linux/amd64
+ Version:           20.10.8
+ API version:       1.41
+ Go version:        go1.16.6
+ Git commit:        3967b7d
+ Built:             Sun Aug 15 22:43:35 2021
+ OS/Arch:           linux/amd64
+ Context:           default
+ Experimental:      true
 
 Server:
  Engine:
-  Version:      17.12.1-ce
-  API version:  1.35 (minimum version 1.12)
-  Go version:   go1.10.1
-  Git commit:   7390fc6
-  Built:        Wed Feb 28 17:46:05 2018
-  OS/Arch:      linux/amd64
-  Experimental: false
+  Version:          20.10.8
+  API version:      1.41 (minimum version 1.12)
+  Go version:       go1.16.6
+  Git commit:       75249d8
+  Built:            Sun Aug 15 00:00:00 2021
+  OS/Arch:          linux/amd64
+  Experimental:     false
 ```
 
 ## Discussion / Help
