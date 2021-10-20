@@ -11,10 +11,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
-
 	"golang.org/x/oauth2"
 
 	"github.com/docker/go-plugins-helpers/volume"
@@ -431,8 +427,9 @@ func attachAndWait(api *linodego.Client, volumeID int, linodeID int) error {
 }
 
 // ensureNotMounted returns an error if the specified volume is in use by a remote Linode
-// or local container
 func (driver *linodeVolumeDriver) ensureNotMounted(volumeID int) error {
+	// TODO: validate whether a volume is in use in a local container
+
 	api, err := driver.linodeAPI()
 	if err != nil {
 		return err
@@ -441,26 +438,6 @@ func (driver *linodeVolumeDriver) ensureNotMounted(volumeID int) error {
 	vol, err := api.GetVolume(context.Background(), volumeID)
 	if err != nil {
 		return err
-	}
-
-	cli, err := client.NewEnvClient()
-	if err != nil {
-		panic(err)
-	}
-
-	f := filters.NewArgs()
-	f.Add("volume", vol.Label)
-	listOpts := types.ContainerListOptions{
-		Filters: f,
-	}
-
-	containers, err := cli.ContainerList(context.Background(), listOpts)
-	if err != nil {
-		return fmt.Errorf("failed to list containers with specified volume: %v", err)
-	}
-
-	if len(containers) > 0 {
-		return fmt.Errorf("volume in use by %s", containers[0].ID)
 	}
 
 	// We should wait for the volume to be detached if it is in the process of detaching
