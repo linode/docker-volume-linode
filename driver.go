@@ -272,13 +272,8 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 	}
 
 	// Ensure the volume is not currently mounted
-	if err := driver.ensureNotMounted(linVol.ID); err != nil {
+	if err := driver.ensureVolumeAttached(linVol.ID); err != nil {
 		return nil, fmt.Errorf("failed to attach volume: %s", err)
-	}
-
-	// Attach to current Linode
-	if err := attachAndWait(api, linVol.ID, driver.instanceID); err != nil {
-		return nil, fmt.Errorf("error attaching volume(%s) to linode: %s", req.Name, err)
 	}
 
 	// wait for kernel to have block device available
@@ -426,8 +421,8 @@ func attachAndWait(api *linodego.Client, volumeID int, linodeID int) error {
 	return nil
 }
 
-// ensureNotMounted returns an error if the specified volume is in use by a remote Linode
-func (driver *linodeVolumeDriver) ensureNotMounted(volumeID int) error {
+// ensureVolumeAttached attempts to attach a volume to the current Linode instance
+func (driver *linodeVolumeDriver) ensureVolumeAttached(volumeID int) error {
 	// TODO: validate whether a volume is in use in a local container
 
 	api, err := driver.linodeAPI()
@@ -435,28 +430,44 @@ func (driver *linodeVolumeDriver) ensureNotMounted(volumeID int) error {
 		return err
 	}
 
-	vol, err := api.GetVolume(context.Background(), volumeID)
+	// Wait for detachment if already detaching
+	volDetaching, err := checkVolumeDetaching(api, volumeID)
 	if err != nil {
 		return err
 	}
 
-	// We should wait for the volume to be detached if it is in the process of detaching
-	if vol.LinodeID != nil {
-		volDetaching, err := checkVolumeDetaching(api, volumeID)
-		if err != nil {
-			return err
-		}
-
-		if !volDetaching {
-			return fmt.Errorf("volume is currently in use by linode id %d", *vol.LinodeID)
-		}
-
+	if volDetaching {
 		if err := waitForLinodeVolumeDetachment(*api, volumeID, 180); err != nil {
 			return err
 		}
 	}
 
-	return nil
+	// Fetch volume
+	vol, err := api.GetVolume(context.Background(), volumeID)
+	if err != nil {
+		return err
+	}
+
+	// If volume is already attached, do nothing
+	if vol.LinodeID != nil && *vol.LinodeID == driver.instanceID {
+		return nil
+	}
+
+	// Forcibly attach the volume if forceAttach is enabled
+	if forceAttach && vol.LinodeID != nil && *vol.LinodeID != driver.instanceID {
+		if err := detachAndWait(api, volumeID); err != nil {
+			return err
+		}
+
+		return attachAndWait(api, volumeID, driver.instanceID)
+	}
+
+	// Throw an error if the instance is not in an attachable state
+	if vol.LinodeID != nil && *vol.LinodeID != driver.instanceID {
+		return fmt.Errorf("failed to attach volume: volume is currently attached to linode %d", *vol.LinodeID)
+	}
+
+	return attachAndWait(api, volumeID, driver.instanceID)
 }
 
 // checkVolumeDetaching checks whether a volume is currently in the process of detaching.

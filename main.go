@@ -15,7 +15,8 @@ import (
 var VERSION string
 
 var (
-	mountRoot   = cfgString("mount-root", "/mnt", "the location to mount volumes")
+	forceAttach = cfgBool("force-attach", false, "If true, volumes will be forcibly attached to the current Linode if already attached to another Linode.")
+	mountRoot   = cfgString("mount-root", "/mnt", "The location to mount volumes to.")
 	socketUser  = cfgString("socket-user", "root", "Sets the user to create the socket with.")
 	logLevel    = cfgString("log-level", "info", "Sets log level: debug,info,warn,error")
 	linodeToken = cfgString("linode-token", "", "Required Personal Access Token generated in Linode Console.")
@@ -63,6 +64,16 @@ func cfgString(name string, def string, desc string) *string {
 		newDef = val
 	}
 	return flag.String(name, newDef, desc)
+}
+
+func cfgBool(name string, def bool, desc string) bool {
+	val, found := getEnv(name)
+	if !found {
+		return false
+	}
+
+	valNormalized := strings.ToLower(val)
+	return valNormalized == "true" || valNormalized == "1"
 }
 
 func getEnv(name string) (string, bool) {
