@@ -1,8 +1,6 @@
 
 # Build Arguments
-TRAVIS_BRANCH ?= test
-TRAVIS_BUILD_NUMBER ?= 9999
-TRAVIS_REPO_SLUG ?= linode/docker-volume-linode
+REPO_SLUG ?= linode/docker-volume-linode
 
 # Deploy Arguments
 DOCKER_USERNAME ?= xxxxx
@@ -14,13 +12,11 @@ TEST_LABEL ?= xyz
 
 GOPATH=$(shell go env GOPATH)
 
-# e.g: docker-volume-linode:rootfs.30
-PLUGIN_NAME_ROOTFS=docker-volume-linode:rootfs.${TRAVIS_BUILD_NUMBER}
+PLUGIN_VERSION=v0.15.0
 
-# e.g: docker-volume-linode:master.30
-# e.g: docker-volume-linode:v1.1.30
-PLUGIN_NAME=${TRAVIS_REPO_SLUG}:${TRAVIS_BRANCH}.${TRAVIS_BUILD_NUMBER}
-PLUGIN_NAME_LATEST=${TRAVIS_REPO_SLUG}:latest
+PLUGIN_NAME_ROOTFS=docker-volume-linode:rootfs.${PLUGIN_VERSION}
+PLUGIN_NAME=${REPO_SLUG}:v0.15.0
+PLUGIN_NAME_LATEST=${REPO_SLUG}:latest
 
 PLUGIN_DIR=plugin-contents-dir
 
@@ -28,10 +24,18 @@ export GO111MODULE=on
 
 all: clean build
 
-deploy: docker-login build
-	# Push images
+deploy:
+	# workaround for plugin
+	docker plugin rm -f ${PLUGIN_NAME} 2>/dev/null || true
+	docker plugin create ${PLUGIN_NAME} ./$(PLUGIN_DIR)
 	docker plugin push ${PLUGIN_NAME}
+	docker plugin rm -f ${PLUGIN_NAME} 2>/dev/null || true
+
+	# load plugin with `latest` tag
+	docker plugin rm -f ${PLUGIN_NAME_LATEST} 2>/dev/null || true
+	docker plugin create ${PLUGIN_NAME_LATEST} ./$(PLUGIN_DIR)
 	docker plugin push ${PLUGIN_NAME_LATEST}
+	docker plugin rm -f ${PLUGIN_NAME_LATEST} 2>/dev/null || true
 
 docker-login:
 	# Login to docker
