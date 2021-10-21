@@ -24,7 +24,8 @@ linode-token=<linode token> linode-label=<linode label>
 | --- | --- |
 | linode-token | **Required** The Linode APIv4 [Personal Access Token](https://cloud.linode.com/profile/tokens)
 | linode-label | **Required** The Linode Label set at creation
-| mount-root | Sets the root directory for volume mounts (default /mnt) |
+| force-attach | If true, volumes will be forcibly attached to the current Linode if already attached to another Linode. (defaults to false) WARNING: Forcibly reattaching volumes can result in data loss if a volume is not properly unmounted.
+| mount-root | Sets the root directory for volume mounts (defaults to /mnt) |
 | log-level | Sets log level to debug,info,warn,error (defaults to info) |
 | socket-user | Sets the user to create the docker socket with (defaults to root) |
 

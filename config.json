@@ -5,6 +5,7 @@
   "env": [
     { "name": "linode-token",  "settable": [ "value" ], "value": "" },
     { "name": "linode-label",   "settable": [ "value" ], "value": "" },
+    { "name": "force-attach",  "settable": [ "value" ], "value": "false" },
     { "name": "socket-user",  "settable": [ "value" ], "value": "root" },
     { "name": "mount-root",  "settable": [ "value" ], "value": "/mnt" },
     { "name": "log-level",  "settable": [ "value" ], "value": "info" }
