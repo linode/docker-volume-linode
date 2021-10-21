@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/oauth2"
 
@@ -431,15 +432,8 @@ func (driver *linodeVolumeDriver) ensureVolumeAttached(volumeID int) error {
 	}
 
 	// Wait for detachment if already detaching
-	volDetaching, err := checkVolumeDetaching(api, volumeID)
-	if err != nil {
+	if err := waitForVolumeNotBusy(api, volumeID); err != nil {
 		return err
-	}
-
-	if volDetaching {
-		if err := waitForLinodeVolumeDetachment(*api, volumeID, 180); err != nil {
-			return err
-		}
 	}
 
 	// Fetch volume
@@ -470,16 +464,15 @@ func (driver *linodeVolumeDriver) ensureVolumeAttached(volumeID int) error {
 	return attachAndWait(api, volumeID, driver.instanceID)
 }
 
-// checkVolumeDetaching checks whether a volume is currently in the process of detaching.
-// This is useful cases where a volume is available but hasn't yet been fully attached
-func checkVolumeDetaching(api *linodego.Client, volumeID int) (bool, error) {
+// waitForVolumeNotBusy checks whether a volume is currently busy.
+func waitForVolumeNotBusy(api *linodego.Client, volumeID int) error {
 	vol, err := api.GetVolume(context.Background(), volumeID)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	if vol.LinodeID == nil {
-		return false, nil
+		return nil
 	}
 
 	filter := linodego.Filter{}
@@ -492,24 +485,48 @@ func checkVolumeDetaching(api *linodego.Client, volumeID int) (bool, error) {
 	detachFilterStr, err := filter.MarshalJSON()
 
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	events, err := api.ListEvents(context.Background(),
 		&linodego.ListOptions{Filter: string(detachFilterStr)})
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	for _, e := range events {
-		if e.Action == "volume_detach" {
-			return true, nil
+	for _, event := range events {
+		if event.Status != "started" {
+			continue
 		}
 
-		if e.Action == "volume_attach" {
-			return false, nil
+		if err := waitForEventFinished(api, event.ID); err != nil {
+			return err
 		}
 	}
 
-	return false, nil
+	return nil
+}
+
+func waitForEventFinished(api *linodego.Client, eventID int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(60)*time.Second)
+	defer cancel()
+
+	ticker := time.NewTicker(2000 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			event, err := api.GetEvent(ctx, eventID)
+			if err != nil {
+				return err
+			}
+
+			if event.Status == "finished"  || event.Status == "failed" {
+				return nil
+			}
+
+		case <-ctx.Done():
+			return fmt.Errorf("error waiting for event(%d) completion: %v", eventID, ctx.Err())
+		}
+	}
 }
