@@ -473,6 +473,15 @@ func (driver *linodeVolumeDriver) ensureVolumeAttached(volumeID int) error {
 // checkVolumeDetaching checks whether a volume is currently in the process of detaching.
 // This is useful cases where a volume is available but hasn't yet been fully attached
 func checkVolumeDetaching(api *linodego.Client, volumeID int) (bool, error) {
+	vol, err := api.GetVolume(context.Background(), volumeID)
+	if err != nil {
+		return false, err
+	}
+
+	if vol.LinodeID == nil {
+		return false, nil
+	}
+
 	filter := linodego.Filter{}
 
 	filter.AddField(linodego.Eq, "entity.id", volumeID)
