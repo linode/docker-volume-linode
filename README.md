@@ -2,7 +2,7 @@
 
 [![Build](/../../actions/workflows/pull_request.yml/badge.svg)](/../../actions/workflows/pull_request.yml)
 
-This [volume plugin](https://docs.docker.com/engine/extend/plugins_volume/) adds the ability to manage [Linode Block Storage](https://www.linode.com/blockstorage) as [Docker Volumes](https://docs.docker.com/storage/volumes/).
+This [volume plugin](https://docs.docker.com/engine/extend/plugins_volume/) adds the ability to manage [Linode Block Storage](https://www.linode.com/blockstorage) as [Docker Volumes](https://docs.docker.com/storage/volumes/) from within a Linode.
 [Good use cases for volumes](https://docs.docker.com/storage/#good-use-cases-for-volumes) include off-node storage to avoid size constraints or moving a container and the related volume between nodes in a [Swarm](https://github.com/linode/docker-machine-driver-linode#provisioning-docker-swarm).
 
 ## Requirements
@@ -22,8 +22,8 @@ linode-token=<linode token> linode-label=<linode label>
 
 | Option Name | Description |
 | --- | --- |
-| linode-token | **Required** The Linode APIv4 [Personal Access Token](https://cloud.linode.com/profile/tokens)
-| linode-label | **Required** The Linode Label set at creation
+| linode-token | **Required** The Linode APIv4 [Personal Access Token](https://cloud.linode.com/profile/tokens) to use. (requires `linodes:read_write volumes:read_write events:read_only`)
+| linode-label | **Required** The label of the current Linode.
 | force-attach | If true, volumes will be forcibly attached to the current Linode if already attached to another Linode. (defaults to false) WARNING: Forcibly reattaching volumes can result in data loss if a volume is not properly unmounted.
 | mount-root | Sets the root directory for volume mounts (defaults to /mnt) |
 | log-level | Sets log level to debug,info,warn,error (defaults to info) |
@@ -90,7 +90,6 @@ Multiple create options can be supplied:
 ```sh
 docker run -it --rm --mount volume-driver=linode,source=test-vol,destination=/test,volume-opt=size=25,volume-opt=filesystem=btrfs,volume-opt=delete-on-remove=true alpine
 ```
-
 
 ### List Volumes
 
