@@ -12,7 +12,7 @@ TEST_LABEL ?= xyz
 
 GOPATH=$(shell go env GOPATH)
 
-PLUGIN_VERSION=v0.16.0
+PLUGIN_VERSION=v0.17.0
 
 PLUGIN_NAME_ROOTFS=docker-volume-linode:rootfs.${PLUGIN_VERSION}
 PLUGIN_NAME=${REPO_SLUG}:${PLUGIN_VERSION}
@@ -52,7 +52,7 @@ build: $(PLUGIN_DIR)
 
 $(PLUGIN_DIR): *.go Dockerfile
 	# compile
-	docker build --build-arg VERSION="$(shell git describe --always)" --no-cache -q -t ${PLUGIN_NAME_ROOTFS} .
+	docker build --build-arg VERSION="$(shell git describe --tags --always)" --no-cache -q -t ${PLUGIN_NAME_ROOTFS} .
 
 	# assemble
 	mkdir -p ./$(PLUGIN_DIR)/rootfs
