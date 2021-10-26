@@ -12,7 +12,7 @@ TEST_LABEL ?= xyz
 
 GOPATH=$(shell go env GOPATH)
 
-PLUGIN_VERSION=$(shell git describe --tags --always)
+PLUGIN_VERSION=$(shell git describe --tags --always --abbrev=0)
 
 PLUGIN_NAME_ROOTFS=docker-volume-linode:rootfs.${PLUGIN_VERSION}
 PLUGIN_NAME=${REPO_SLUG}:${PLUGIN_VERSION}
