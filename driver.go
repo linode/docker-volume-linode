@@ -191,9 +191,9 @@ func (driver *linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 	}
 
 	createOpts := linodego.VolumeCreateOptions{
-		Label:    req.Name,
-		LinodeID: driver.instanceID,
-		Size:     size,
+		Label:  req.Name,
+		Region: driver.region,
+		Size:   size,
 	}
 
 	if fsOpt, ok := req.Options["filesystem"]; ok {
