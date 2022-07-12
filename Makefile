@@ -94,7 +94,7 @@ test-setup:
 	docker plugin enable $(PLUGIN_NAME)
 
 check:
-	docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.32.2 golangci-lint run -v
+	docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.46.2 golangci-lint run -v
 
 unit-test:
 	GOOS=linux go test
