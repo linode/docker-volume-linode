@@ -15,7 +15,7 @@ This [volume plugin](https://docs.docker.com/engine/extend/plugins_volume/) adds
 ```sh
 docker plugin install --alias linode --grant-all-permissions\
 linode/docker-volume-linode\
-linode-token=<linode token> linode-label=<linode label>
+linode-token=<linode token>
 ```
 
 ### Driver Options
@@ -23,7 +23,7 @@ linode-token=<linode token> linode-label=<linode label>
 | Option Name | Description |
 | --- | --- |
 | linode-token | **Required** The Linode APIv4 [Personal Access Token](https://cloud.linode.com/profile/tokens) to use. (requires `linodes:read_write volumes:read_write events:read_only`)
-| linode-label | **Required** The label of the current Linode.
+| linode-label | The label of the current Linode. This is only necessary if your Linode does not have a resolvable Link Local IPv6 Address.
 | force-attach | If true, volumes will be forcibly attached to the current Linode if already attached to another Linode. (defaults to false) WARNING: Forcibly reattaching volumes can result in data loss if a volume is not properly unmounted.
 | mount-root | Sets the root directory for volume mounts (defaults to /mnt) |
 | log-level | Sets log level to debug,info,warn,error (defaults to info) |
@@ -39,7 +39,6 @@ The plugin can also be configured (or reconfigured) in multiple steps.
 docker plugin install --alias linode linode/docker-volume-linode
 docker plugin disable linode
 docker plugin set linode linode-token=<linode token>
-docker plugin set linode linode-label=<linode label>
 docker plugin enable linode
 ```
 
@@ -125,7 +124,7 @@ my-test-volume-50
 ### Run the driver
 
 ```sh
-docker-volume-linode --linode-token=<token from linode console> --linode-label=<linode label>
+docker-volume-linode --linode-token=<token from linode console>
 ```
 
 ### Debugging
@@ -141,7 +140,7 @@ docker plugin set docker-volume-linode log-level=debug
 #### Enable Debug Level in manual installation
 
 ```sh
-docker-volume-linode --linode-token=<...> --linode-label=<...> --log-level=debug
+docker-volume-linode --linode-token=<...> --log-level=debug
 ```
 
 ## Development
