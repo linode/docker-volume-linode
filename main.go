@@ -39,9 +39,6 @@ func main() {
 	if *linodeToken == "" {
 		log.Fatal("linode-token is required.")
 	}
-	if *linodeLabel == "" {
-		log.Fatal("linode-label is required.")
-	}
 
 	log.Debugf("linode-token: %s", *linodeToken)
 	log.Debugf("linode-label: %s", *linodeLabel)

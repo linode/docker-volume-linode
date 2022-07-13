@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"path"
@@ -85,11 +86,16 @@ func setupLinodeAPI(token string) *linodego.Client {
 
 func (driver *linodeVolumeDriver) determineLinodeID() error {
 	if driver.linodeLabel == "" {
-		var hostnameErr error
-		driver.linodeLabel, hostnameErr = os.Hostname()
-		if hostnameErr != nil {
-			return fmt.Errorf("Could not determine hostname: %s", hostnameErr)
+		// If the label isn't defined, we should determine the IP through the network interface
+		log.Infof("Using network interface to determine Linode ID")
+
+		if err := driver.determineLinodeIDFromNetworking(); err != nil {
+			return fmt.Errorf("Failed to determine Linode ID from networking: %s\n"+
+				"If this error continues to occur or if you are using a custom network configuration, "+
+				"consider using the `linode-label` flag.", err)
 		}
+
+		return nil
 	}
 
 	jsonFilter, _ := json.Marshal(map[string]string{"label": driver.linodeLabel})
@@ -107,6 +113,63 @@ func (driver *linodeVolumeDriver) determineLinodeID() error {
 		driver.region = linodes[0].Region
 	}
 	return nil
+}
+
+func (driver *linodeVolumeDriver) resolveMachineLinkLocal() (string, error) {
+	// We only want to filter on eth0 for Link Local.
+	iface, err := net.InterfaceByName("eth0")
+	if err != nil {
+		return "", err
+	}
+
+	addrs, err := iface.Addrs()
+	if err != nil {
+		return "", err
+	}
+
+	for _, addr := range addrs {
+		if ifa, ok := addr.(*net.IPNet); ok {
+			if ifa.IP.To4() != nil {
+				continue
+			}
+
+			if !ifa.IP.IsLinkLocalUnicast() {
+				continue
+			}
+			return strings.Split(addr.String(), "/")[0], nil
+		}
+	}
+
+	return "", fmt.Errorf("no link local ipv6 address found")
+}
+
+func (driver *linodeVolumeDriver) determineLinodeIDFromNetworking() error {
+	linkLocal, err := driver.resolveMachineLinkLocal()
+	if err != nil {
+		return fmt.Errorf("failed to determine linode id from networking: %s", err)
+	}
+
+	instances, err := driver.linodeAPIPtr.ListInstances(context.Background(), nil)
+	if err != nil {
+		return fmt.Errorf("failed to list instances: %s", err)
+	}
+
+	for _, instance := range instances {
+		ips, err := driver.linodeAPIPtr.GetInstanceIPAddresses(context.Background(), instance.ID)
+		if err != nil {
+			return fmt.Errorf("failed to get ip addresses for instance %d: %s", instance.ID, err)
+		}
+
+		if ips.IPv6.LinkLocal == nil || ips.IPv6.LinkLocal.Address != linkLocal {
+			continue
+		}
+
+		driver.instanceID = instance.ID
+		driver.region = instance.Region
+		return nil
+	}
+
+	return fmt.Errorf("instance with link local address %s not found", linkLocal)
 }
 
 // Get implementation
@@ -521,7 +584,7 @@ func waitForEventFinished(api *linodego.Client, eventID int) error {
 				return err
 			}
 
-			if event.Status == "finished"  || event.Status == "failed" {
+			if event.Status == "finished" || event.Status == "failed" {
 				return nil
 			}
 
