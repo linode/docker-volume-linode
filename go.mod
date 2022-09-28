@@ -8,7 +8,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-plugins-helpers v0.0.0-20210623094020-7ef169fb8b8e
 	github.com/konsorten/go-windows-terminal-sequences v1.0.1 // indirect
-	github.com/linode/linodego v1.8.1
+	github.com/linode/linodego v1.9.3
 	github.com/sirupsen/logrus v1.1.1
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 )
