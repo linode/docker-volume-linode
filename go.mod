@@ -8,7 +8,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-plugins-helpers v0.0.0-20210623094020-7ef169fb8b8e
 	github.com/konsorten/go-windows-terminal-sequences v1.0.1 // indirect
-	github.com/linode/linodego v1.8.1
+	github.com/linode/linodego v1.13.0
 	github.com/sirupsen/logrus v1.1.1
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 )
@@ -19,6 +19,7 @@ require (
 	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2 // indirect
 	golang.org/x/net v0.0.0-20190628185345-da137c7871d7 // indirect
 	golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a // indirect
+	golang.org/x/text v0.3.0 // indirect
 	google.golang.org/appengine v1.4.0 // indirect
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
