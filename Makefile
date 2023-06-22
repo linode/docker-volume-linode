@@ -43,8 +43,8 @@ docker-login:
 
 build: $(PLUGIN_DIR)
 	# load plugin with versionied tag
-	docker plugin rm -f ${PLUGIN_NAME} 2>/dev/null || true
-	docker plugin create ${PLUGIN_NAME} ./$(PLUGIN_DIR)
+	# docker plugin rm -f ${PLUGIN_NAME} 2>/dev/null || true
+	# docker plugin create ${PLUGIN_NAME} ./$(PLUGIN_DIR)
 	# load plugin with `latest` tag
 	docker plugin rm -f ${PLUGIN_NAME} 2>/dev/null || true
 	docker plugin rm -f ${PLUGIN_NAME_LATEST} 2>/dev/null || true
@@ -73,10 +73,10 @@ test: test-pre-check \
 	clean-volumes
 
 test-create-volume:
-	docker volume create -d $(PLUGIN_NAME) test-volume-default-size
+	docker volume create -d $(PLUGIN_NAME_LATEST) -o delete-on-remove=true test-volume-default-size
 
 test-create-volume-50:
-	docker volume create -d $(PLUGIN_NAME) -o size=50 test-volume-50g
+	docker volume create -d $(PLUGIN_NAME_LATEST) -o delete-on-remove=true -o size=50 test-volume-50g
 
 test-rm-volume-50:
 	docker volume rm test-volume-50g
@@ -90,11 +90,11 @@ test-pre-check:
 		echo -en "#############################\nYou must set TEST_* Variables\n#############################\n"; exit 1; fi
 
 test-setup:
-	@docker plugin set $(PLUGIN_NAME) linode-token=${TEST_TOKEN} linode-label=${TEST_LABEL}
-	docker plugin enable $(PLUGIN_NAME)
+	@docker plugin set $(PLUGIN_NAME_LATEST) linode-token=${TEST_TOKEN} linode-label=${TEST_LABEL}
+	docker plugin enable $(PLUGIN_NAME_LATEST)
 
 check:
-	docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.46.2 golangci-lint run -v
+	docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:latest golangci-lint run --timeout 15m0s
 
 unit-test:
 	GOOS=linux go test
