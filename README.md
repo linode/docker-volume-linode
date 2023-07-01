@@ -1,5 +1,6 @@
 # Docker Volume Driver For Linode
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/linode/docker-volume-linode/linode.svg)](https://pkg.go.dev/github.com/linode/docker-volume-linode/linode)
 [![Build](/../../actions/workflows/pull_request.yml/badge.svg)](/../../actions/workflows/pull_request.yml)
 
 This [volume plugin](https://docs.docker.com/engine/extend/plugins_volume/) adds the ability to manage [Linode Block Storage](https://www.linode.com/blockstorage) as [Docker Volumes](https://docs.docker.com/storage/volumes/) from within a Linode.
