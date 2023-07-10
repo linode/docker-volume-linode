@@ -14,8 +14,8 @@ This [volume plugin](https://docs.docker.com/engine/extend/plugins_volume/) adds
 ## Installation
 
 ```sh
-docker plugin install --alias linode --grant-all-permissions\
-linode/docker-volume-linode\
+docker plugin install --alias linode --grant-all-permissions \
+linode/docker-volume-linode \
 linode-token=<linode token>
 ```
 
