@@ -1,11 +1,11 @@
-name: OCI Image Publish
+name: Docker Plugin Publish
 on:
   workflow_dispatch: null
   release:
     types: [ published ]
 jobs:
   oci_publish:
-    name: Build and publish the OCI image
+    name: Build and publish the docker plugin
     runs-on: ubuntu-latest
     steps:
       - name: Clone Repository
