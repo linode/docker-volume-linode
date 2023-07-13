@@ -7,6 +7,7 @@
     type: g6-standard-2
     region: us-southeast
     temp_token_name: docker-volume-linode-dev
+    token_duration_seconds: 3600
   tasks:
     - name: Ensure the previous token has been removed
       linode.cloud.token:
@@ -16,6 +17,11 @@
     - name: Create a temporary token for the plugin to consume
       linode.cloud.token:
         label: "{{ temp_token_name }}"
+        scopes: "events:read_write linodes:read_write volumes:read_write"
+
+        # This token should expire in an hour by default
+        expiry: "{{ '%Y-%m-%dT%H:%M:%S' | strftime((ansible_date_time.epoch | int + token_duration_seconds), utc=True) }}"
+
         state: present
       register: temp_token
 
