@@ -24,7 +24,7 @@ export GO111MODULE=on
 
 all: clean build
 
-deploy:
+deploy: $(PLUGIN_DIR)
 	# workaround for plugin
 	docker plugin rm -f ${PLUGIN_NAME} 2>/dev/null || true
 	docker plugin create ${PLUGIN_NAME} ./$(PLUGIN_DIR)
