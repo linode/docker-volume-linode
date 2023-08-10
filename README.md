@@ -148,33 +148,48 @@ docker-volume-linode --linode-token=<...> --log-level=debug
 
 A great place to get started is the Docker Engine managed plugin system [documentation](https://docs.docker.com/engine/extend/#create-a-volumedriver).
 
-## Tested On
+## Running Integration Tests
 
-```text
-Fedora 34
+The integration tests for this project can be easily run using the `make quick-test` target.
+This target provisions and connects to a Linode instance, uploads the plugin, builds it, enables it, 
+and runs the integration test suite. Subsequent runs of this target will re-use the existing Linode instance.
+
+In order to run this target, Ansible and the [Linode Ansible Collection](https://github.com/linode/ansible_linode/)
+must be installed on the local machine:
+
+```bash
+pip install ansible
+
+ansible-galaxy collection install linode.cloud
+
+pip install -r https://raw.githubusercontent.com/linode/ansible_linode/main/requirements.txt
 ```
 
-```text
-Tested With:
-Client:
- Version:           20.10.8
- API version:       1.41
- Go version:        go1.16.6
- Git commit:        3967b7d
- Built:             Sun Aug 15 22:43:35 2021
- OS/Arch:           linux/amd64
- Context:           default
- Experimental:      true
+The integration test suite also requires that a full-access [Linode Personal Access Token](https://www.linode.com/docs/products/tools/api/guides/manage-api-tokens/)
+be exported as the `LINODE_TOKEN` environment variable.
 
-Server:
- Engine:
-  Version:          20.10.8
-  API version:      1.41 (minimum version 1.12)
-  Go version:       go1.16.6
-  Git commit:       75249d8
-  Built:            Sun Aug 15 00:00:00 2021
-  OS/Arch:          linux/amd64
-  Experimental:     false
+```bash
+export LINODE_TOKEN=EXAMPLETOKEN
+```
+
+The integration test suite can now be run:
+
+```bash
+make quick-test
+```
+
+NOTE: This target requires an existing SSH key be created. If an SSH key exists at a path other than
+`~/.ssh/id_rsa`, the `QUICKTEST_SSH_PUBKEY` argument can be specified:
+
+```bash
+make QUICKTEST_SSH_PUBKEY="~/.ssh/mykey.pub" quick-test
+```
+
+If you would like to create a test environment for docker-volume-linode without running the integration test suite, 
+the `QUICKTEST_SKIP_TESTS` argument can be specified:
+
+```bash
+make QUICKTEST_SKIP_TESTS=1 quick-test
 ```
 
 ## Discussion / Help

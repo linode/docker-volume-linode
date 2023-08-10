@@ -7,8 +7,11 @@ DOCKER_USERNAME ?= xxxxx
 DOCKER_PASSWORD ?= xxxxx
 
 # Test Arguments
-TEST_TOKEN ?= xyz
-TEST_LABEL ?= xyz
+TEST_TOKEN ?= $LINODE_TOKEN
+
+# Quick Test Arguments
+QUICKTEST_SSH_PUBKEY ?= ~/.ssh/id_rsa.pub
+QUICKTEST_SKIP_TESTS ?= 0
 
 GOPATH=$(shell go env GOPATH)
 
@@ -61,6 +64,10 @@ $(PLUGIN_DIR): *.go Dockerfile
 	cp config.json ./$(PLUGIN_DIR)/
 	docker rm -vf tmp
 
+# Provision a test environment for docker-volume-linode using Ansible.
+quick-test:
+	ANSIBLE_STDOUT_CALLBACK=yaml ansible-playbook -v --extra-vars "ssh_pubkey_path=${QUICKTEST_SSH_PUBKEY} skip_tests=${QUICKTEST_SKIP_TESTS}" quick-test/deploy.yml
+
 # Run Integration Tests
 #   Requires TEST_* Variables to be set
 test: test-pre-check \
@@ -86,11 +93,11 @@ test-use-volume:
 	docker run --rm -i -v test-volume-default-size:/mnt busybox test -f /mnt/abc.txt || false
 
 test-pre-check:
-	@if [ "${TEST_TOKEN}" = "xyz" ] || [ "${TEST_LABEL}" = "xyz" ] ; then \
+	@if [ "${TEST_TOKEN}" = "xyz" ]; then \
 		echo -en "#############################\nYou must set TEST_* Variables\n#############################\n"; exit 1; fi
 
 test-setup:
-	@docker plugin set $(PLUGIN_NAME_LATEST) linode-token=${TEST_TOKEN} linode-label=${TEST_LABEL}
+	@docker plugin set $(PLUGIN_NAME_LATEST) linode-token=${TEST_TOKEN}
 	docker plugin enable $(PLUGIN_NAME_LATEST)
 
 check:

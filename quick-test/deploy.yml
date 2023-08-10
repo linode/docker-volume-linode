@@ -1,0 +1,104 @@
+---
+- name: Deploy Test Linode
+  hosts: localhost
+  vars:
+    ssh_pubkey_path: ~/.ssh/id_rsa.pub
+    label: docker-volume-test
+    type: g6-standard-2
+    region: us-southeast
+    temp_token_name: docker-volume-linode-dev
+    token_duration_seconds: 3600
+  tasks:
+    - name: Ensure the previous token has been removed
+      linode.cloud.token:
+        label: "{{ temp_token_name }}"
+        state: absent
+
+    - name: Create a temporary token for the plugin to consume
+      linode.cloud.token:
+        label: "{{ temp_token_name }}"
+        scopes: "events:read_write linodes:read_write volumes:read_write"
+
+        # This token should expire in an hour by default
+        expiry: "{{ '%Y-%m-%dT%H:%M:%S' | strftime((ansible_date_time.epoch | int + token_duration_seconds), utc=True) }}"
+
+        state: present
+      register: temp_token
+
+    - name: Ensure the test instance is created
+      linode.cloud.instance:
+        label: "{{ label }}"
+        type: "{{ type }}"
+        region: "{{ region }}"
+        image: linode/alpine3.18
+        booted: true
+        authorized_keys:
+          - "{{ lookup('file', ssh_pubkey_path) }}"
+        state: present
+      register: create_inst
+
+    - name: Wait for SSH to be ready
+      wait_for: host="{{ create_inst.instance.ipv4[0] }}" port=22 delay=1  timeout=300
+
+    - name: Append host to the in-memory inventory
+      add_host:
+        hostname: "test-runner"
+        ansible_host: "{{ create_inst.instance.ipv4[0] }}"
+        groups: test_runner
+        ansible_user: root
+        temp_token: "{{ temp_token.token.token }}"
+
+- name: Configure the test instance
+  hosts: test_runner
+  remote_user: root
+  vars:
+    skip_tests: 0
+  tasks:
+    - name: Update repositories and install necessary packages
+      community.general.apk:
+        name: docker,py3-pip,rsync,make
+        update_cache: true
+
+    - name: Start and enable the Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Install the Docker Python package
+      pip:
+        name: docker
+        state: present
+
+    - name: Remove any existing project files
+      file:
+        path: /docker-volume-linode
+        state: absent
+
+    - name: Copy the local project to the remote
+      synchronize:
+        src: ../../
+        dest: /docker-volume-linode
+        rsync_opts:
+          - "--exclude=.git"
+
+    - name: Build and install the plugin
+      shell: |
+        make PLUGIN_VERSION="dev" build
+        docker plugin set linode/docker-volume-linode:latest linode-token={{ temp_token }}
+        docker plugin enable linode/docker-volume-linode:latest
+      args:
+        chdir: /docker-volume-linode
+      when:
+        - skip_tests == "1"
+
+    - name: Run the test suite
+      command: "make TEST_TOKEN={{ temp_token }} test"
+      args:
+        chdir: /docker-volume-linode
+      when:
+        - skip_tests != "1"
+
+    - name: Output the test instance IP
+      debug:
+        msg: "{{ ansible_host }}"
