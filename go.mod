@@ -6,7 +6,7 @@ require (
 	github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651
 	github.com/linode/linodego v1.24.1
 	github.com/sirupsen/logrus v1.9.3
-	golang.org/x/oauth2 v0.13.0
+	golang.org/x/oauth2 v0.14.0
 )
 
 require (
@@ -16,9 +16,9 @@ require (
 	github.com/go-resty/resty/v2 v2.9.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/net v0.18.0 // indirect
+	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
