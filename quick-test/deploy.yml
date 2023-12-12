@@ -5,7 +5,7 @@
     ssh_pubkey_path: ~/.ssh/id_rsa.pub
     label: docker-volume-test
     type: g6-standard-2
-    region: us-southeast
+    region: us-ord
     temp_token_name: docker-volume-linode-dev
     token_duration_seconds: 3600
   tasks:
