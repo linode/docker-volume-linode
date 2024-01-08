@@ -32,8 +32,8 @@
         region: "{{ region }}"
         image: linode/alpine3.18
         booted: true
-        authorized_keys:
-          - "{{ lookup('file', ssh_pubkey_path) }}"
+        metadata:
+          user_data: '{{ lookup("template", playbook_dir ~ "/harden.yaml.j2") }}'
         state: present
       register: create_inst
 

@@ -1,0 +1,36 @@
+#cloud-config
+hostname: dx-dev-vm
+
+package_update: true
+package_upgrade: true
+packages:
+  - fail2ban
+
+ssh_pwauth: false
+disable_root: true
+
+users:
+  - default
+  - name: linodedx
+    gecos: The primary account for development on this VM.
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - '{{ ssh_pubkey }}'
+
+write_files:
+  # Root login over SSH isn't fully disabled by disable_root
+  - path: /etc/ssh/sshd_config.d/51-disable-root.conf
+    permissions: "0600"
+    content: |
+      PermitRootLogin no
+
+runcmd:
+  - service ssh restart
+  - service fail2ban start --enable
+
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 80,443,21,22/tcp
+  - ufw enable
