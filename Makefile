@@ -65,6 +65,7 @@ $(PLUGIN_DIR): *.go Dockerfile
 	docker rm -vf tmp
 
 # Provision a test environment for docker-volume-linode using Ansible.
+.PHONY: quick-test
 quick-test:
 	ANSIBLE_STDOUT_CALLBACK=yaml ansible-playbook -v --extra-vars "ssh_pubkey_path=${QUICKTEST_SSH_PUBKEY} skip_tests=${QUICKTEST_SKIP_TESTS}" quick-test/deploy.yml
 
