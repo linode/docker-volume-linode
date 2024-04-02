@@ -16,6 +16,7 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/docker/go-plugins-helpers/volume"
+	metadata "github.com/linode/go-metadata"
 	"github.com/linode/linodego"
 	log "github.com/sirupsen/logrus"
 )
@@ -85,9 +86,19 @@ func setupLinodeAPI(token string) *linodego.Client {
 }
 
 func (driver *linodeVolumeDriver) determineLinodeID() error {
+	if err := driver.determineLinodeIDFromMetadata(); err == nil {
+		return nil
+	}
+
+	log.Info(
+		"Failed to update linode info with metadata service. " +
+			"Your Linode is likely in a region without Linode Metadata Services support. " +
+			"Other methods will be used to obtain the info.",
+	)
+
 	if driver.linodeLabel == "" {
 		// If the label isn't defined, we should determine the IP through the network interface
-		log.Infof("Using network interface to determine Linode ID")
+		log.Info("Using network interface to determine Linode ID")
 
 		if err := driver.determineLinodeIDFromNetworking(); err != nil {
 			return fmt.Errorf("Failed to determine Linode ID from networking: %s\n"+
@@ -98,6 +109,28 @@ func (driver *linodeVolumeDriver) determineLinodeID() error {
 		return nil
 	}
 
+	return driver.determineLinodeIDFromLabel()
+}
+
+func (driver *linodeVolumeDriver) determineLinodeIDFromMetadata() error {
+	client, err := metadata.NewClient(context.Background())
+	if err != nil {
+		return err
+	}
+
+	instanceInfo, err := client.GetInstance(context.Background())
+	if err != nil {
+		return err
+	}
+
+	driver.instanceID = instanceInfo.ID
+	driver.region = instanceInfo.Region
+	driver.linodeLabel = instanceInfo.Label
+
+	return nil
+}
+
+func (driver *linodeVolumeDriver) determineLinodeIDFromLabel() error {
 	jsonFilter, _ := json.Marshal(map[string]string{"label": driver.linodeLabel})
 	listOpts := linodego.NewListOptions(0, string(jsonFilter))
 	linodes, lErr := driver.linodeAPIPtr.ListInstances(context.Background(), listOpts)
@@ -282,7 +315,6 @@ func (driver *linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 
 // Remove implementation
 func (driver *linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
-
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
 
@@ -546,7 +578,6 @@ func waitForVolumeNotBusy(api *linodego.Client, volumeID int) error {
 	filter.Order = "desc"
 
 	detachFilterStr, err := filter.MarshalJSON()
-
 	if err != nil {
 		return err
 	}

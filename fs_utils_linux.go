@@ -2,7 +2,6 @@ package main
 
 import (
 	"os/exec"
-
 	"strings"
 
 	log "github.com/sirupsen/logrus"
