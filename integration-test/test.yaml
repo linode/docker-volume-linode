@@ -58,6 +58,7 @@
 - name: Configure the test instance
   hosts: test_runner
   remote_user: linodedx
+  gather_facts: no
   vars:
     skip_tests: 0
     dest_dir: /home/linodedx/docker-volume-linode
