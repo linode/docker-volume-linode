@@ -65,13 +65,17 @@ $(PLUGIN_DIR): *.go Dockerfile
 	docker rm -vf tmp
 
 # Provision a test environment for docker-volume-linode using Ansible.
-.PHONY: quick-test
-quick-test:
-	ANSIBLE_STDOUT_CALLBACK=yaml ansible-playbook -v --extra-vars "ssh_pubkey_path=${QUICKTEST_SSH_PUBKEY} skip_tests=${QUICKTEST_SKIP_TESTS}" quick-test/deploy.yml
+.PHONY: int-test
+int-test:
+	ANSIBLE_HOST_KEY_CHECKING=False ANSIBLE_STDOUT_CALLBACK=yaml \
+	ansible-playbook -v --extra-vars \
+	"ssh_pubkey_path=${QUICKTEST_SSH_PUBKEY} skip_tests=${QUICKTEST_SKIP_TESTS}" \
+	integration-test/test.yaml
 
 # Run Integration Tests
 #   Requires TEST_* Variables to be set
-test: test-pre-check \
+.PHONY: local-test
+local-test: test-pre-check \
 	build \
 	test-setup \
 	test-create-volume-50 \

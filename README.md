@@ -150,7 +150,7 @@ A great place to get started is the Docker Engine managed plugin system [documen
 
 ## Running Integration Tests
 
-The integration tests for this project can be easily run using the `make quick-test` target.
+The integration tests for this project can be easily run using the `make int-test` target.
 This target provisions and connects to a Linode instance, uploads the plugin, builds it, enables it, 
 and runs the integration test suite. Subsequent runs of this target will re-use the existing Linode instance.
 
@@ -175,21 +175,21 @@ export LINODE_TOKEN=EXAMPLETOKEN
 The integration test suite can now be run:
 
 ```bash
-make quick-test
+make int-test
 ```
 
 NOTE: This target requires an existing SSH key be created. If an SSH key exists at a path other than
 `~/.ssh/id_rsa`, the `QUICKTEST_SSH_PUBKEY` argument can be specified:
 
 ```bash
-make QUICKTEST_SSH_PUBKEY="~/.ssh/mykey.pub" quick-test
+make QUICKTEST_SSH_PUBKEY="~/.ssh/mykey.pub" int-test
 ```
 
 If you would like to create a test environment for docker-volume-linode without running the integration test suite, 
 the `QUICKTEST_SKIP_TESTS` argument can be specified:
 
 ```bash
-make QUICKTEST_SKIP_TESTS=1 quick-test
+make QUICKTEST_SKIP_TESTS=1 int-test
 ```
 
 ## Discussion / Help
