@@ -85,16 +85,26 @@ func setupLinodeAPI(token string) *linodego.Client {
 	return &api
 }
 
-func (driver *linodeVolumeDriver) determineLinodeID() error {
-	if err := driver.determineLinodeIDFromMetadata(); err == nil {
-		return nil
+func metadataServicesAvailable() bool {
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:80", metadata.APIHost), 2*time.Second)
+	if err != nil {
+		return false
 	}
 
-	log.Info(
-		"Failed to update linode info with metadata service. " +
-			"Your Linode is likely in a region without Linode Metadata Services support. " +
-			"Other methods will be used to obtain the info.",
-	)
+	conn.Close()
+	return true
+}
+
+func (driver *linodeVolumeDriver) determineLinodeID() error {
+	if metadataServicesAvailable() {
+		err := driver.determineLinodeIDFromMetadata()
+		if err != nil {
+			log.Error(
+				"Failed to get linode info from Linode metadata service. " +
+					"Other methods will be used.",
+			)
+		}
+	}
 
 	if driver.linodeLabel == "" {
 		// If the label isn't defined, we should determine the IP through the network interface
@@ -406,7 +416,7 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 	mp := driver.labelToMountPoint(linVol.Label)
 	if _, err := os.Stat(mp); os.IsNotExist(err) {
 		log.Infof("Creating mountpoint directory: %s", mp)
-		if err = os.MkdirAll(mp, 0755); err != nil {
+		if err = os.MkdirAll(mp, 0o755); err != nil {
 			return nil, fmt.Errorf("Error creating mountpoint directory(%s): %s", mp, err)
 		}
 	}
