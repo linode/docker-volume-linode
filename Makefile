@@ -67,7 +67,8 @@ $(PLUGIN_DIR): *.go Dockerfile
 # Provision a test environment for docker-volume-linode using Ansible.
 .PHONY: int-test
 int-test:
-	ANSIBLE_STDOUT_CALLBACK=yaml ansible-playbook -v --extra-vars \
+	ANSIBLE_HOST_KEY_CHECKING=False ANSIBLE_STDOUT_CALLBACK=yaml \
+	ansible-playbook -v --extra-vars \
 	"ssh_pubkey_path=${QUICKTEST_SSH_PUBKEY} skip_tests=${QUICKTEST_SKIP_TESTS}" \
 	integration-test/test.yaml
 
