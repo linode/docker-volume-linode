@@ -10,6 +10,7 @@
     token_duration_seconds: 3600
   tasks:
     - name: Ensure the previous token has been removed
+      no_log: true
       linode.cloud.token:
         label: "{{ temp_token_name }}"
         state: absent
@@ -18,6 +19,7 @@
         ssh_pubkey: '{{ lookup("file", ssh_pubkey_path) }}'
 
     - name: Create a temporary token for the plugin to consume
+      no_log: true
       linode.cloud.token:
         label: "{{ temp_token_name }}"
         scopes: "events:read_write linodes:read_write volumes:read_write"
@@ -44,6 +46,7 @@
       wait_for: host="{{ create_inst.instance.ipv4[0] }}" port=22 delay=1  timeout=300
 
     - name: Append host to the in-memory inventory
+      no_log: true
       add_host:
         hostname: "test-runner"
         ansible_host: "{{ create_inst.instance.ipv4[0] }}"
@@ -95,6 +98,7 @@
           - "--exclude=.git"
 
     - name: Build and install the plugin
+      no_log: true
       shell: |
         make PLUGIN_VERSION="dev" build
         docker plugin set linode/docker-volume-linode:latest linode-token={{ temp_token }}
@@ -105,6 +109,7 @@
         - skip_tests == "1"
 
     - name: Run the test suite
+      no_log: true
       command: "make TEST_TOKEN={{ temp_token }} test"
       args:
         chdir: "{{ dest_dir }}"
