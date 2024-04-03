@@ -306,8 +306,18 @@ func (driver *linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 		}
 	}
 
-	if _, err := api.CreateVolume(context.Background(), createOpts); err != nil {
+	volume, err := api.CreateVolume(context.Background(), createOpts)
+	if err != nil {
 		return fmt.Errorf("Create(%s) Failed: %s", req.Name, err)
+	}
+
+	_, err = driver.linodeAPIPtr.WaitForVolumeStatus(
+		context.Background(), volume.ID, linodego.VolumeActive, 600,
+	)
+	if err != nil {
+		return fmt.Errorf(
+			"Failed to wait for volume %d to be active: %w", volume.ID, err,
+		)
 	}
 
 	return nil
