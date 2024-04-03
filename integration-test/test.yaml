@@ -112,3 +112,15 @@
     - name: Output the test instance IP
       debug:
         msg: "{{ ansible_host }}"
+
+- name: Clean up
+  hosts: localhost
+  gather_facts: no
+  vars:
+    temp_token_name: docker-volume-linode-dev
+  
+  tasks:
+    - name: Remove the temp token
+      linode.cloud.token:
+        label: "{{ temp_token_name }}"
+        state: absent
