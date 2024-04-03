@@ -98,24 +98,16 @@
         rsync_opts:
           - "--exclude=.git"
 
-    - name: Build and install the plugin
-      no_log: true
-      shell: |
-        make PLUGIN_VERSION="dev" build
-        docker plugin set linode/docker-volume-linode:latest linode-token={{ temp_token }}
-        docker plugin enable linode/docker-volume-linode:latest
-      args:
-        chdir: "{{ dest_dir }}"
-      when:
-        - skip_tests == "1"
-
     - name: Run the test suite
       no_log: true
-      command: "make TEST_TOKEN={{ temp_token }} test"
+      command: "make test"
       args:
         chdir: "{{ dest_dir }}"
       when:
         - skip_tests != "1"
+      environment:
+        LINODE_TOKEN: "{{ temp_token }}"
+        PLUGIN_VERSION: dev
 
     - name: Output the test instance IP
       debug:

@@ -7,7 +7,7 @@ DOCKER_USERNAME ?= xxxxx
 DOCKER_PASSWORD ?= xxxxx
 
 # Test Arguments
-TEST_TOKEN ?= $LINODE_TOKEN
+TEST_TOKEN ?= $(LINODE_TOKEN)
 
 # Quick Test Arguments
 QUICKTEST_SSH_PUBKEY ?= ~/.ssh/id_rsa.pub
