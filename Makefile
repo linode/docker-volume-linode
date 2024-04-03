@@ -74,7 +74,8 @@ int-test:
 
 # Run Integration Tests
 #   Requires TEST_* Variables to be set
-test: test-pre-check \
+.PHONY: local-test
+local-test: test-pre-check \
 	build \
 	test-setup \
 	test-create-volume-50 \

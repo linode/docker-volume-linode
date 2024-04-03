@@ -100,7 +100,7 @@
 
     - name: Run the test suite
       no_log: true
-      command: "make test"
+      command: "make local-test"
       args:
         chdir: "{{ dest_dir }}"
       when:
