@@ -16,6 +16,7 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/docker/go-plugins-helpers/volume"
+	metadata "github.com/linode/go-metadata"
 	"github.com/linode/linodego"
 	log "github.com/sirupsen/logrus"
 )
@@ -84,10 +85,30 @@ func setupLinodeAPI(token string) *linodego.Client {
 	return &api
 }
 
+func metadataServicesAvailable() bool {
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:80", metadata.APIHost), 2*time.Second)
+	if err != nil {
+		return false
+	}
+
+	conn.Close()
+	return true
+}
+
 func (driver *linodeVolumeDriver) determineLinodeID() error {
+	if metadataServicesAvailable() {
+		err := driver.determineLinodeIDFromMetadata()
+		if err != nil {
+			log.Error(
+				"Failed to get linode info from Linode metadata service. " +
+					"Other methods will be used.",
+			)
+		}
+	}
+
 	if driver.linodeLabel == "" {
 		// If the label isn't defined, we should determine the IP through the network interface
-		log.Infof("Using network interface to determine Linode ID")
+		log.Info("Using network interface to determine Linode ID")
 
 		if err := driver.determineLinodeIDFromNetworking(); err != nil {
 			return fmt.Errorf("Failed to determine Linode ID from networking: %s\n"+
@@ -98,6 +119,28 @@ func (driver *linodeVolumeDriver) determineLinodeID() error {
 		return nil
 	}
 
+	return driver.determineLinodeIDFromLabel()
+}
+
+func (driver *linodeVolumeDriver) determineLinodeIDFromMetadata() error {
+	client, err := metadata.NewClient(context.Background())
+	if err != nil {
+		return err
+	}
+
+	instanceInfo, err := client.GetInstance(context.Background())
+	if err != nil {
+		return err
+	}
+
+	driver.instanceID = instanceInfo.ID
+	driver.region = instanceInfo.Region
+	driver.linodeLabel = instanceInfo.Label
+
+	return nil
+}
+
+func (driver *linodeVolumeDriver) determineLinodeIDFromLabel() error {
 	jsonFilter, _ := json.Marshal(map[string]string{"label": driver.linodeLabel})
 	listOpts := linodego.NewListOptions(0, string(jsonFilter))
 	linodes, lErr := driver.linodeAPIPtr.ListInstances(context.Background(), listOpts)
@@ -292,7 +335,6 @@ func (driver *linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 
 // Remove implementation
 func (driver *linodeVolumeDriver) Remove(req *volume.RemoveRequest) error {
-
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
 
@@ -374,7 +416,7 @@ func (driver *linodeVolumeDriver) Mount(req *volume.MountRequest) (*volume.Mount
 	mp := driver.labelToMountPoint(linVol.Label)
 	if _, err := os.Stat(mp); os.IsNotExist(err) {
 		log.Infof("Creating mountpoint directory: %s", mp)
-		if err = os.MkdirAll(mp, 0755); err != nil {
+		if err = os.MkdirAll(mp, 0o755); err != nil {
 			return nil, fmt.Errorf("Error creating mountpoint directory(%s): %s", mp, err)
 		}
 	}
@@ -556,7 +598,6 @@ func waitForVolumeNotBusy(api *linodego.Client, volumeID int) error {
 	filter.Order = "desc"
 
 	detachFilterStr, err := filter.MarshalJSON()
-
 	if err != nil {
 		return err
 	}
