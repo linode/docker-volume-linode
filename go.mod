@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651
 	github.com/linode/go-metadata v0.2.0
-	github.com/linode/linodego v1.33.0
+	github.com/linode/linodego v1.33.1
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/oauth2 v0.20.0
 )
@@ -18,7 +18,7 @@ require (
 	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 	gopkg.in/ini.v1 v1.66.6 // indirect
 )
