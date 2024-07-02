@@ -17,8 +17,8 @@ github.com/jarcoal/httpmock v1.3.1 h1:iUx3whfZWVf3jT01hQTO/Eo5sAYtB2/rqaUuOtpInw
 github.com/jarcoal/httpmock v1.3.1/go.mod h1:3yb8rc4BI7TCBhFY8ng0gjuLKJNquuDNiPaZjnENuYg=
 github.com/linode/go-metadata v0.2.0 h1:hlWzkYLa80ikA0NmFX2hcwhcnWFol8F3UIvJnOgdKw4=
 github.com/linode/go-metadata v0.2.0/go.mod h1:XraDbSwms0+CtA7/Qh7agkSvGDc6H0s782kpX9MdMu0=
-github.com/linode/linodego v1.36.0 h1:AeFkL3cNtiirEiS9gxzNUUaZafFHhNvVpeyuokmKTu8=
-github.com/linode/linodego v1.36.0/go.mod h1:7MDOCz/DXckUEByLaXEwVBn6yHuvjoT7zVhp9Tr9OS0=
+github.com/linode/linodego v1.36.1 h1:lxYBKWJCk6m9p/OdHQlgteyj4S0eglq3glmK16QxUHY=
+github.com/linode/linodego v1.36.1/go.mod h1:KyV4OO/9/tAxaLSjyjFyOQBcS9bYUdei1hwk3nl0UjI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
