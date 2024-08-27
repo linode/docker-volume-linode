@@ -1,11 +1,12 @@
 module github.com/linode/docker-volume-linode
 
 go 1.21
+toolchain go1.22.5
 
 require (
 	github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651
 	github.com/linode/go-metadata v0.2.0
-	github.com/linode/linodego v1.39.0
+	github.com/linode/linodego v1.40.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/oauth2 v0.22.0
 )
