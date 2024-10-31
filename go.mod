@@ -6,7 +6,7 @@ toolchain go1.22.5
 
 require (
 	github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651
-	github.com/linode/go-metadata v0.2.0
+	github.com/linode/go-metadata v0.2.1
 	github.com/linode/linodego v1.42.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/oauth2 v0.23.0
@@ -16,7 +16,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
-	github.com/go-resty/resty/v2 v2.13.1 // indirect
+	github.com/go-resty/resty/v2 v2.15.3 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
