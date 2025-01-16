@@ -9,8 +9,8 @@ github.com/docker/go-connections v0.5.0 h1:USnMq7hx7gwdVZq1L49hLXaFtUdTADjXGp+uj
 github.com/docker/go-connections v0.5.0/go.mod h1:ov60Kzw0kKElRwhNs9UlUHAE/F9Fe6GLaXnqyDdmEXc=
 github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651 h1:YcvzLmdrP/b8kLAGJ8GT7bdncgCAiWxJZIlt84D+RJg=
 github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651/go.mod h1:LFyLie6XcDbyKGeVK6bHe+9aJTYCxWLBg5IrJZOaXKA=
-github.com/go-resty/resty/v2 v2.16.2 h1:CpRqTjIzq/rweXUt9+GxzzQdlkqMdt8Lm/fuK/CAbAg=
-github.com/go-resty/resty/v2 v2.16.2/go.mod h1:0fHAoK7JoBy/Ch36N8VFeMsK7xQOHhvWaC3iOktwmIU=
+github.com/go-resty/resty/v2 v2.16.3 h1:zacNT7lt4b8M/io2Ahj6yPypL7bqx9n1iprfQuodV+E=
+github.com/go-resty/resty/v2 v2.16.3/go.mod h1:hkJtXbA2iKHzJheXYvQ8snQES5ZLGKMwQ07xAwp/fiA=
 github.com/google/go-cmp v0.5.2/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
@@ -20,8 +20,8 @@ github.com/jarcoal/httpmock v1.3.1 h1:iUx3whfZWVf3jT01hQTO/Eo5sAYtB2/rqaUuOtpInw
 github.com/jarcoal/httpmock v1.3.1/go.mod h1:3yb8rc4BI7TCBhFY8ng0gjuLKJNquuDNiPaZjnENuYg=
 github.com/linode/go-metadata v0.2.1 h1:fioxMUqvN6RGLthKINr/XAKsKvg6qdff1dTwoucfpJc=
 github.com/linode/go-metadata v0.2.1/go.mod h1:6DcmVDcRTMWa+jYAP7R82GWfHE3cNP7tNbWoRwcD3lE=
-github.com/linode/linodego v1.45.0 h1:jds704+yDlxX+1s854Bhyeonzde3MBZksp3Yvgi49L0=
-github.com/linode/linodego v1.45.0/go.mod h1:J5qs5Qg8KafUbE9ltYzwxcNpJXaGwLcvOVyDJNZS2As=
+github.com/linode/linodego v1.46.0 h1:+uOG4SD2MIrhbrLrvOD5HrbdLN3D19Wgn3MgdUNQjeU=
+github.com/linode/linodego v1.46.0/go.mod h1:vyklQRzZUWhFVBZdYx4dcYJU/gG9yKB9VUcUs6ub0Lk=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
