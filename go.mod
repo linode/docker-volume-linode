@@ -1,8 +1,8 @@
 module github.com/linode/docker-volume-linode
 
-go 1.22
+go 1.23
 
-toolchain go1.22.5
+toolchain go1.23.7
 
 require (
 	github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651
