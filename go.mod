@@ -9,7 +9,7 @@ require (
 	github.com/linode/go-metadata v0.2.1
 	github.com/linode/linodego v1.48.1
 	github.com/sirupsen/logrus v1.9.3
-	golang.org/x/oauth2 v0.27.0
+	golang.org/x/oauth2 v0.28.0
 )
 
 require (
