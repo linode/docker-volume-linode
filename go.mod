@@ -1,7 +1,6 @@
 module github.com/linode/docker-volume-linode
 
 go 1.23
-
 toolchain go1.23.7
 
 require (
@@ -9,7 +8,7 @@ require (
 	github.com/linode/go-metadata v0.2.1
 	github.com/linode/linodego v1.47.0
 	github.com/sirupsen/logrus v1.9.3
-	golang.org/x/oauth2 v0.26.0
+	golang.org/x/oauth2 v0.28.0
 )
 
 require (
