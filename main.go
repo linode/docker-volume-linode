@@ -79,7 +79,7 @@ func getEnv(name string) (string, bool) {
 	}
 
 	name = strings.ToUpper(name)
-	name = strings.Replace(name, "-", "_", -1)
+	name = strings.ReplaceAll(name, "-", "_")
 
 	if val, found := os.LookupEnv(name); found {
 		return val, true

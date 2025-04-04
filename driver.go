@@ -5,15 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"net/http"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-
-	"golang.org/x/oauth2"
 
 	"github.com/docker/go-plugins-helpers/volume"
 	metadata "github.com/linode/go-metadata"
@@ -72,16 +69,13 @@ func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
 }
 
 func setupLinodeAPI(token string) *linodego.Client {
-	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-	oauth2Client := &http.Client{
-		Transport: &oauth2.Transport{
-			Source: tokenSource,
-		},
-	}
+	api := linodego.NewClient(nil)
 
-	api := linodego.NewClient(oauth2Client)
 	ua := fmt.Sprintf("docker-volume-linode/%s linodego/%s", VERSION, linodego.Version)
 	api.SetUserAgent(ua)
+
+	api.SetToken(token)
+
 	return &api
 }
 

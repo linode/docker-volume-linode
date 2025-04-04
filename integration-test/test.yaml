@@ -35,7 +35,7 @@
         label: "{{ label }}"
         type: "{{ type }}"
         region: "{{ region }}"
-        image: linode/ubuntu23.10
+        image: linode/ubuntu24.04
         booted: true
         metadata:
           user_data: '{{ lookup("template", playbook_dir ~ "/harden.yaml.j2") }}'
