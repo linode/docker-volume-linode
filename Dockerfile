@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine as builder
+FROM golang:1.25-alpine as builder
 ENV GO111MODULE=on
 ARG VERSION=0
 COPY . /docker-volume-linode
