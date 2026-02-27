@@ -18,8 +18,8 @@ github.com/google/go-querystring v1.2.0 h1:yhqkPbu2/OH+V9BfpCVPZkNmUXhb2gBxJArfh
 github.com/google/go-querystring v1.2.0/go.mod h1:8IFJqpSRITyJ8QhQ13bmbeMBDfmeEJZD5A0egEOmkqU=
 github.com/jarcoal/httpmock v1.4.1 h1:0Ju+VCFuARfFlhVXFc2HxlcQkfB+Xq12/EotHko+x2A=
 github.com/jarcoal/httpmock v1.4.1/go.mod h1:ftW1xULwo+j0R0JJkJIIi7UKigZUXCLLanykgjwBXL0=
-github.com/linode/go-metadata v0.2.3 h1:tGTVXJdVYI2e50jljW81C1Anmux7NfVX0MC6CgiJTyc=
-github.com/linode/go-metadata v0.2.3/go.mod h1:gud2Gs3kl83jVNv8po33Oa/riZ6ZEvUYhQPP8Bh69Q4=
+github.com/linode/go-metadata v0.2.4 h1:iif+14PN5T0u/wRnu6i/UlLQrlaFlWvDJzm0Wl9Rn0I=
+github.com/linode/go-metadata v0.2.4/go.mod h1:h6yHiRupdKvyPkydU9g8kUA3QKdAgj3WX2wrF+mUv1c=
 github.com/linode/linodego v1.65.0 h1:SdsuGD8VSsPWeShXpE7ihl5vec+fD3MgwhnfYC/rj7k=
 github.com/linode/linodego v1.65.0/go.mod h1:tOFiTErdjkbVnV+4S0+NmIE9dqqZUEM2HsJaGu8wMh8=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
