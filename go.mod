@@ -5,7 +5,7 @@ go 1.25.0
 require (
 	github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651
 	github.com/linode/go-metadata v0.3.0
-	github.com/linode/linodego v1.68.0
+	github.com/linode/linodego v1.69.1
 	github.com/sirupsen/logrus v1.9.4
 )
 
@@ -21,5 +21,5 @@ require (
 	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	golang.org/x/tools v0.44.0 // indirect
-	gopkg.in/ini.v1 v1.67.1 // indirect
+	gopkg.in/ini.v1 v1.67.2 // indirect
 )
