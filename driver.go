@@ -14,7 +14,7 @@ import (
 
 	"github.com/docker/go-plugins-helpers/volume"
 	metadata "github.com/linode/go-metadata"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -56,7 +56,11 @@ func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
 		return driver.linodeAPIPtr, nil
 	}
 
-	driver.linodeAPIPtr = setupLinodeAPI(driver.linodeToken)
+	api, err := setupLinodeAPI(driver.linodeToken)
+	if err != nil {
+		return nil, err
+	}
+	driver.linodeAPIPtr = api
 
 	if driver.instanceID == 0 {
 		if err := driver.determineLinodeID(); err != nil {
@@ -68,15 +72,17 @@ func (driver *linodeVolumeDriver) linodeAPI() (*linodego.Client, error) {
 	return driver.linodeAPIPtr, nil
 }
 
-func setupLinodeAPI(token string) *linodego.Client {
-	api := linodego.NewClient(nil)
+func setupLinodeAPI(token string) (*linodego.Client, error) {
+	api, err := linodego.NewClient(nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Linode API client: %w", err)
+	}
 
 	ua := fmt.Sprintf("docker-volume-linode/%s linodego/%s", VERSION, linodego.Version)
 	api.SetUserAgent(ua)
-
 	api.SetToken(token)
 
-	return &api
+	return &api, nil
 }
 
 func metadataServicesAvailable() bool {
@@ -315,9 +321,10 @@ func (driver *linodeVolumeDriver) Create(req *volume.CreateRequest) error {
 		return fmt.Errorf("Create(%s) Failed: %s", req.Name, err)
 	}
 
-	_, err = driver.linodeAPIPtr.WaitForVolumeStatus(
-		context.Background(), volume.ID, linodego.VolumeActive, 600,
-	)
+	ctx, cancel := context.WithTimeout(context.Background(), 600*time.Second)
+	defer cancel()
+
+	_, err = api.WaitForVolumeStatus(ctx, volume.ID, linodego.VolumeActive)
 	if err != nil {
 		return fmt.Errorf(
 			"Failed to wait for volume %d to be active: %w", volume.ID, err,
@@ -525,7 +532,10 @@ func attachAndWait(api *linodego.Client, volumeID int, linodeID int) error {
 		return fmt.Errorf("Error attaching volume(%d) to linode(%d): %s", volumeID, linodeID, err)
 	}
 
-	if _, err := api.WaitForVolumeLinodeID(context.Background(), volumeID, &linodeID, 300); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 300*time.Second)
+	defer cancel()
+
+	if _, err := api.WaitForVolumeLinodeID(ctx, volumeID, &linodeID); err != nil {
 		return fmt.Errorf("Error waiting for attachment of volume(%d) to linode(%d): %s", volumeID, linodeID, err)
 	}
 	return nil
@@ -603,7 +613,7 @@ func waitForVolumeNotBusy(api *linodego.Client, volumeID int) error {
 	}
 
 	for _, event := range events {
-		if event.Status != "started" {
+		if event.Status != linodego.EventStarted {
 			continue
 		}
 
@@ -629,7 +639,7 @@ func waitForEventFinished(api *linodego.Client, eventID int) error {
 				return err
 			}
 
-			if event.Status == "finished" || event.Status == "failed" {
+			if event.Status == linodego.EventFinished || event.Status == linodego.EventFailed {
 				return nil
 			}
 

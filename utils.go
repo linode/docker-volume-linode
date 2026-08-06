@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/docker/go-plugins-helpers/volume"
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -56,8 +56,10 @@ func linodeVolumeToDockerVolume(lv linodego.Volume, mp string) *volume.Volume {
 	v := &volume.Volume{
 		Name:       lv.Label,
 		Mountpoint: mp,
-		CreatedAt:  lv.Created.Format(time.RFC3339),
 		Status:     make(map[string]interface{}),
+	}
+	if lv.Created != nil {
+		v.CreatedAt = lv.Created.Format(time.RFC3339)
 	}
 	return v
 }
