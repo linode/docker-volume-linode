@@ -6,7 +6,7 @@ require (
 	github.com/docker/go-plugins-helpers v0.0.0-20240701071450-45e2431495c8
 	github.com/linode/go-metadata v0.3.0
 	github.com/linode/linodego/v2 v2.5.0
-	github.com/sirupsen/logrus v1.9.4
+	github.com/sirupsen/logrus v1.10.0
 )
 
 require (
