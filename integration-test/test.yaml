@@ -65,7 +65,7 @@
 - name: Configure the test instance
   hosts: test_runner
   remote_user: linodedx
-  gather_facts: no
+  gather_facts: false
   vars:
     skip_tests: 0
     dest_dir: /home/linodedx/docker-volume-linode
@@ -78,7 +78,7 @@
       until: cloud_init_status.rc == 0 and (cloud_init_status.stdout | from_json)["status"] == "done"
 
     - name: Update repositories and install necessary packages
-      become: yes
+      become: true
       ansible.builtin.apt:
         name:
           - docker.io
@@ -91,7 +91,7 @@
       service:
         name: docker
         state: started
-        enabled: yes
+        enabled: true
 
     - name: Remove any existing project files
       file:
@@ -122,7 +122,7 @@
 
 - name: Clean up
   hosts: localhost
-  gather_facts: no
+  gather_facts: false
   vars:
     label: docker-volume-test
     temp_token_name: docker-volume-linode-dev
