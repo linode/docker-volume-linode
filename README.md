@@ -153,6 +153,7 @@ A great place to get started is the Docker Engine managed plugin system [documen
 The integration tests for this project can be easily run using the `make int-test` target.
 This target provisions and connects to a Linode instance, uploads the plugin, builds it, enables it, 
 and runs the integration test suite. Subsequent runs of this target will re-use the existing Linode instance.
+To delete the instance after the run, set `QUICKTEST_CLEANUP_INSTANCE=true` in the environment.
 
 In order to run this target, Ansible and the [Linode Ansible Collection](https://github.com/linode/ansible_linode/)
 must be installed on the local machine:

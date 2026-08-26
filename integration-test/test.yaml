@@ -36,6 +36,8 @@
         type: "{{ type }}"
         region: "{{ region }}"
         image: linode/ubuntu24.04
+        authorized_keys:
+          - "{{ ssh_pubkey }}"
         booted: true
         metadata:
           user_data: '{{ lookup("template", playbook_dir ~ "/harden.yaml.j2") }}'
@@ -117,9 +119,17 @@
   hosts: localhost
   gather_facts: no
   vars:
+    label: docker-volume-test
     temp_token_name: docker-volume-linode-dev
-  
+
   tasks:
+    - name: Remove the test instance
+      linode.cloud.instance:
+        label: "{{ label }}"
+        state: absent
+      when:
+        - lookup("env", "QUICKTEST_CLEANUP_INSTANCE") | bool
+
     - name: Remove the temp token
       linode.cloud.token:
         label: "{{ temp_token_name }}"
