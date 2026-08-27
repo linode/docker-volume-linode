@@ -16,17 +16,6 @@ jobs:
       - name: Clone Repository
         uses: actions/checkout@v7
 
-      - name: setup python 3
-        uses: actions/setup-python@v7
-        with:
-          python-version: '3.x'
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
       - name: OIDC connections
         id: docker_oidc
         uses: docker/oidc-action@v1
