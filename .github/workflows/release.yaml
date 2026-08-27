@@ -16,18 +16,12 @@ jobs:
       - name: Clone Repository
         uses: actions/checkout@v7
 
-      - name: OIDC connections
-        id: docker_oidc
-        uses: docker/oidc-action@v1
-        with:
-          connection-id: ${{ vars.DOCKER_OIDC_CONNECTION_ID }}
-          expires-in: 1800
-
       - name: Login to Docker Hub
         uses: docker/login-action@v4
         with:
           username: ${{ vars.DOCKERHUB_ORGANIZATION }}
-          password: ${{ steps.docker_oidc.outputs.token }}
+        env:
+          DOCKERHUB_OIDC_CONNECTIONID: ${{ vars.DOCKERHUB_OIDC_CONNECTIONID }}
 
       - name: Build and push to DockerHub
         run: make deploy
