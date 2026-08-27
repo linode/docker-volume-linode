@@ -9,56 +9,63 @@
     temp_token_name: docker-volume-linode-dev
     token_duration_seconds: 3600
   tasks:
-    - name: Ensure the previous token has been removed
-      no_log: true
-      linode.cloud.token:
-        label: "{{ temp_token_name }}"
-        state: absent
+    - block:
+        - name: Ensure the previous token has been removed
+          no_log: true
+          linode.cloud.token:
+            label: "{{ temp_token_name }}"
+            state: absent
 
-    - set_fact:
-        ssh_pubkey: '{{ lookup("file", ssh_pubkey_path) }}'
+        - set_fact:
+            ssh_pubkey: '{{ lookup("file", ssh_pubkey_path) }}'
 
-    - name: Create a temporary token for the plugin to consume
-      no_log: true
-      linode.cloud.token:
-        label: "{{ temp_token_name }}"
-        scopes: "events:read_write linodes:read_write volumes:read_write"
+        - name: Create a temporary token for the plugin to consume
+          no_log: true
+          linode.cloud.token:
+            label: "{{ temp_token_name }}"
+            scopes: "events:read_write linodes:read_write volumes:read_write"
 
-        # This token should expire in an hour by default
-        expiry: "{{ '%Y-%m-%dT%H:%M:%S' | strftime((ansible_date_time.epoch | int + token_duration_seconds), utc=True) }}"
+            # This token should expire in an hour by default
+            expiry: "{{ '%Y-%m-%dT%H:%M:%S' | strftime((ansible_date_time.epoch | int + token_duration_seconds), utc=True) }}"
 
-        state: present
-      register: temp_token
+            state: present
+          register: temp_token
 
-    - name: Ensure the test instance is created
-      linode.cloud.instance:
-        label: "{{ label }}"
-        type: "{{ type }}"
-        region: "{{ region }}"
-        image: linode/ubuntu24.04
-        booted: true
-        metadata:
-          user_data: '{{ lookup("template", playbook_dir ~ "/harden.yaml.j2") }}'
-        state: present
-      register: create_inst
+        - name: Ensure the test instance is created
+          linode.cloud.instance:
+            label: "{{ label }}"
+            type: "{{ type }}"
+            region: "{{ region }}"
+            image: linode/ubuntu24.04
+            authorized_keys:
+              - "{{ ssh_pubkey }}"
+            booted: true
+            metadata:
+              user_data: '{{ lookup("template", playbook_dir ~ "/harden.yaml.j2") }}'
+            state: present
+          register: create_inst
 
-    - name: Wait for SSH to be ready
-      wait_for: host="{{ create_inst.instance.ipv4[0] }}" port=22 delay=1  timeout=300
+        - name: Wait for SSH to be ready
+          wait_for: host="{{ create_inst.instance.ipv4[0] }}" port=22 delay=1  timeout=300
 
-    - name: Append host to the in-memory inventory
-      no_log: true
-      add_host:
-        hostname: "test-runner"
-        ansible_host: "{{ create_inst.instance.ipv4[0] }}"
-        groups: test_runner
-        ansible_user: linodedx
-        ansible_ssh_retries: 50
-        temp_token: "{{ temp_token.token.token }}"
+        - name: Append host to the in-memory inventory
+          no_log: true
+          add_host:
+            hostname: "test-runner"
+            ansible_host: "{{ create_inst.instance.ipv4[0] }}"
+            groups: test_runner
+            ansible_user: linodedx
+            ansible_ssh_retries: 50
+            temp_token: "{{ temp_token.token.token }}"
+      rescue:
+        - name: Record the deploy failure
+          set_fact:
+            deploy_failed_msg: "{{ ansible_failed_result.msg | default('Deploy Test Linode failed') }}"
 
 - name: Configure the test instance
   hosts: test_runner
   remote_user: linodedx
-  gather_facts: no
+  gather_facts: false
   vars:
     skip_tests: 0
     dest_dir: /home/linodedx/docker-volume-linode
@@ -71,7 +78,7 @@
       until: cloud_init_status.rc == 0 and (cloud_init_status.stdout | from_json)["status"] == "done"
 
     - name: Update repositories and install necessary packages
-      become: yes
+      become: true
       ansible.builtin.apt:
         name:
           - docker.io
@@ -84,7 +91,7 @@
       service:
         name: docker
         state: started
-        enabled: yes
+        enabled: true
 
     - name: Remove any existing project files
       file:
@@ -115,12 +122,25 @@
 
 - name: Clean up
   hosts: localhost
-  gather_facts: no
+  gather_facts: false
   vars:
+    label: docker-volume-test
     temp_token_name: docker-volume-linode-dev
-  
+
   tasks:
+    - name: Remove the test instance
+      linode.cloud.instance:
+        label: "{{ label }}"
+        state: absent
+      when:
+        - lookup("env", "QUICKTEST_CLEANUP_INSTANCE") | bool
+
     - name: Remove the temp token
       linode.cloud.token:
         label: "{{ temp_token_name }}"
         state: absent
+
+    - name: Fail if deploy failed
+      fail:
+        msg: "{{ deploy_failed_msg }}"
+      when: deploy_failed_msg is defined
