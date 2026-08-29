@@ -38,7 +38,9 @@ jobs:
           go-version: "stable"
       - name: build
         run: make build
-      - name: check
-        run: make check
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
       - name: unit-test
         run: make unit-test
