@@ -106,7 +106,7 @@ test-setup:
 	docker plugin enable $(PLUGIN_NAME_LATEST)
 
 check:
-	docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:latest golangci-lint run --timeout 15m0s
+	golangci-lint run --timeout 15m0s
 
 unit-test:
 	GOOS=linux go test
