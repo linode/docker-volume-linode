@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/docker/go-plugins-helpers v0.0.0-20240701071450-45e2431495c8
 	github.com/linode/go-metadata v0.3.1
-	github.com/linode/linodego/v2 v2.10.0
+	github.com/linode/linodego/v2 v2.11.0
 	github.com/sirupsen/logrus v1.10.2
 )
 
@@ -16,7 +16,7 @@ require (
 	github.com/go-resty/resty/v2 v2.17.2 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
 	golang.org/x/mod v0.41.0 // indirect
-	golang.org/x/net v0.61.0 // indirect
+	golang.org/x/net v0.62.0 // indirect
 	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
